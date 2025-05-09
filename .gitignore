@@ -4,6 +4,7 @@ Debug/
 Release/
 bin/
 lib/
+include/
 
 CMakeCache.txt
 CMakeFiles/

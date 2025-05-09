@@ -4,9 +4,9 @@ project(MAGE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(FetchContent)
+set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 
-set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/include)
+include(FetchContent)
 
 FetchContent_Declare(
   glm
@@ -29,9 +29,9 @@ FetchContent_MakeAvailable(glfw)
 
 find_package(Vulkan REQUIRED)
 
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB_RECURSE SOURCES ${SRC_DIR}/*.cpp)
 
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME}
   PRIVATE
