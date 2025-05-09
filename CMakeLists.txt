@@ -27,6 +27,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
+add_subdirectory(path_to_glfw EXCLUDE_FROM_ALL)
+add_subdirectory(path_to_glm EXCLUDE_FROM_ALL)
+
 find_package(Vulkan REQUIRED)
 
 file(GLOB_RECURSE SOURCES ${SRC_DIR}/*.cpp)
