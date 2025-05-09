@@ -7,20 +7,23 @@
 
 class MageWindow {
 public:
-	MageWindow(uint16_t width, uint16_t height, const char* title);
+	MageWindow(uint32_t width, uint32_t height, const char* title);
 	~MageWindow();
+
+	MageWindow(const MageWindow&) = delete;
+	MageWindow& operator=(const MageWindow&) = delete;
 
 	void poolEvents();
 	bool shouldClose();
 
 	GLFWwindow* getGLFWWindow() const;
-	uint16_t getWidth() const;
-	uint16_t getHeight() const;
+	uint32_t getWidth() const;
+	uint32_t getHeight() const;
 
 private:
 	GLFWwindow* window;
-	uint16_t width;
-	uint16_t height;
+	uint32_t width;
+	uint32_t height;
 	const char* title;
 	
 	void initWindow();

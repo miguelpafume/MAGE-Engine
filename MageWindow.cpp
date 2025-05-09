@@ -1,6 +1,6 @@
 #include "MageWindow.hpp"
 
-MageWindow::MageWindow(uint16_t width, uint16_t height, const char* title) : width(width), height(height), title(title) {
+MageWindow::MageWindow(uint32_t width, uint32_t height, const char* title) : width(width), height(height), title(title) {
 	if (!glfwInit()) {
 		throw std::runtime_error("FAILED TO INITIALIZE GLFW!");
 	}
@@ -27,12 +27,12 @@ GLFWwindow* MageWindow::getGLFWWindow() const {
 	return window;
 }
 
-uint16_t MageWindow::getWidth() const {
-	return width;
+uint32_t MageWindow::getWidth() const{
+	return static_cast<uint32_t>(width);
 }
 
-uint16_t MageWindow::getHeight() const {
-	return height;
+uint32_t MageWindow::getHeight() const{
+	return static_cast<uint32_t>(height);
 }
 void MageWindow::initWindow() {
 	window = glfwCreateWindow(width, height, title, nullptr, nullptr);
