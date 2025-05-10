@@ -1,26 +1,27 @@
-cmake_minimum_required(VERSION 3.20)
-project(MAGE)
+cmake_minimum_required(VERSION 3.26)
+project(mage_engine)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
-set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/incldue")
+set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
 find_package(Vulkan REQUIRED)
-
-file(GLOB_RECURSE SOURCES ${SRC_DIR}/*.cpp)
-
 add_subdirectory(${INCLUDE_DIR}/glfw)
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+file(GLOB_RECURSE SOURCES ${SRC_DIR}/*.cpp)
+file(GLOB_RECURSE HEADERS ${SRC_DIR}/*.hpp ${SRC_DIR}/*.h)
+
+source_group("Source Files" FILES ${SOURCES})
+source_group("Header Files" FILES ${HEADERS})
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME}
   PRIVATE
     ${SRC_DIR}
     ${INCLUDE_DIR}
-    ${INCLUDE_DIR}/glm
-    ${Vulkan_INCLUDE_DIRS}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -29,3 +30,4 @@ target_link_libraries(${PROJECT_NAME}
     Vulkan::Vulkan
 )
 
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
