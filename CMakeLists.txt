@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(SRC_DIR "${CMAKE_SOURCE_DIR}/src")
 set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
+add_compile_definitions(SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
 find_package(Vulkan REQUIRED)
 add_subdirectory(${INCLUDE_DIR}/glfw)
 
