@@ -122,18 +122,8 @@ private:
 	std::vector<VkFence> imagesInFlight;
 	uint32_t currentFrame = 0;
 
-	bool framebufferResized = false;
-
 	void initWindow() {
 		window = std::make_unique<MageWindow>(WIDTH, HEIGHT, "Vulkan");
-
-		window->setWindowUserPointer(this);
-		window->setFramebufferSizeCallback(framebufferResizeCallback);
-	}
-
-	static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-		auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
-		app->framebufferResized = true;
 	}
 
 	void initVulkan() {
@@ -153,6 +143,15 @@ private:
 	}
 
 	void recreateSwapChain() {
+		int width = 0, height = 0;
+
+		window->getFramebufferSize(&width, &height);
+
+		while (width == 0 || height == 0) {
+			window->getFramebufferSize(&width, &height);
+			glfwWaitEvents();
+		}
+
 		vkDeviceWaitIdle(device);
 
 		cleanupSwapChain();
@@ -870,7 +869,6 @@ private:
 		VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			std::cout << "RECREATING SWAP CHAIN" << std::endl;
 			recreateSwapChain();
 			return;
 		} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -915,13 +913,11 @@ private:
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &imageIndex;
 
-		vkQueuePresentKHR(presentQueue, &presentInfo);
-
 		result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-			framebufferResized = false;
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->wasResized()) {
 			recreateSwapChain();
+			window->resetResizeFlag();
 		} else if (result != VK_SUCCESS) {
 			throw std::runtime_error("FAILED TO PRESENT SWAP CHAIN IMAGE!");
 		}

@@ -16,9 +16,10 @@ public:
 	void poolEvents();
 	bool shouldClose();
 
-	void setWindowUserPointer(void* userPointer);
-
-	void setFramebufferSizeCallback(GLFWframebuffersizefun callback);
+	// RESIZE WINDOW
+	bool wasResized() const;
+	void resetResizeFlag();
+	void getFramebufferSize(int* width, int* height);
 
 	GLFWwindow* getGLFWWindow() const;
 	uint32_t getWidth() const;
@@ -29,6 +30,10 @@ private:
 	uint32_t width;
 	uint32_t height;
 	const char* title;
+
+	// RESIZE WINDOW
+	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+	bool framebufferResized = false;
 	
 	void initWindow();
 };
