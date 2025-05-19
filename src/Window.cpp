@@ -1,6 +1,6 @@
-#include "MageWindow.hpp"
+#include "Window.hpp"
 
-MageWindow::MageWindow(uint32_t width, uint32_t height, const char* title) : width(width), height(height), title(title) {
+Window::Window(uint32_t width, uint32_t height, const char* title) : width(width), height(height), title(title) {
 	if (!glfwInit()) {
 		throw std::runtime_error("FAILED TO INITIALIZE GLFW!");
 	}
@@ -13,7 +13,7 @@ MageWindow::MageWindow(uint32_t width, uint32_t height, const char* title) : wid
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
-void MageWindow::initWindow() {
+void Window::initWindow() {
 	window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 
 	if (!window) {
@@ -22,15 +22,15 @@ void MageWindow::initWindow() {
 	}
 }
 
-MageWindow::~MageWindow() {
+Window::~Window() {
 	glfwDestroyWindow(window);
 }
 
-void MageWindow::poolEvents() {
+void Window::poolEvents() {
 	glfwPollEvents();
 }
 
-bool MageWindow::shouldClose() {
+bool Window::shouldClose() {
 	return glfwWindowShouldClose(window);
 }
 
@@ -38,20 +38,20 @@ bool MageWindow::shouldClose() {
 	RESIZE FUNCIONS
 */
 
-void MageWindow::framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height) {
-	auto window = reinterpret_cast<MageWindow*>(glfwGetWindowUserPointer(glfwWindow));
+void Window::framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height) {
+	auto window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
 	window->framebufferResized = true;
 }
 
-void MageWindow::resetResizeFlag() {
+void Window::resetResizeFlag() {
 	framebufferResized = false;
 }
 
-void MageWindow::getFramebufferSize(int* width, int* height) {
+void Window::getFramebufferSize(int* width, int* height) {
 	glfwGetFramebufferSize(window, width, height);
 }
 
-bool MageWindow::wasResized() const {
+bool Window::wasResized() const {
 	return framebufferResized;
 }
 
@@ -59,14 +59,14 @@ bool MageWindow::wasResized() const {
 	CONST RETURN FUNCIONTS
 */
 
-GLFWwindow* MageWindow::getGLFWWindow() const {
+GLFWwindow* Window::getGLFWWindow() const {
 	return window;
 }
 
-uint32_t MageWindow::getWidth() const {
+uint32_t Window::getWidth() const {
 	return static_cast<uint32_t>(width);
 }
 
-uint32_t MageWindow::getHeight() const {
+uint32_t Window::getHeight() const {
 	return static_cast<uint32_t>(height);
 }

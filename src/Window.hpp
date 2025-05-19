@@ -5,13 +5,13 @@
 
 #include <stdexcept>
 
-class MageWindow {
+class Window {
 public:
-	MageWindow(uint32_t width, uint32_t height, const char* title);
-	~MageWindow();
+	Window(uint32_t width, uint32_t height, const char* title);
+	~Window();
 
-	MageWindow(const MageWindow&) = delete;
-	MageWindow& operator=(const MageWindow&) = delete;
+	Window(const Window&) = delete;
+	Window& operator=(const Window&) = delete;
 
 	void poolEvents();
 	bool shouldClose();

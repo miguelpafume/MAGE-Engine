@@ -22,8 +22,8 @@
 #include <stdexcept>
 
 // CUSTOM
-#include "MageEngine.hpp"
-#include "MageWindow.hpp"
+#include "Mage.hpp"
+#include "Window.hpp"
 
 // DEBUG
 #ifdef NDEBUG
@@ -90,7 +90,7 @@ public:
 	}
 
 private:
-	std::unique_ptr<MageWindow> window;
+	std::unique_ptr<Window> window;
 	VkDebugUtilsMessengerEXT debugMessenger;
 	
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -123,7 +123,7 @@ private:
 	uint32_t currentFrame = 0;
 
 	void initWindow() {
-		window = std::make_unique<MageWindow>(WIDTH, HEIGHT, "Vulkan");
+		window = std::make_unique<Window>(WIDTH, HEIGHT, "Vulkan");
 	}
 
 	void initVulkan() {
