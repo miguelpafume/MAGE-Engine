@@ -6,7 +6,6 @@ MageWindow::MageWindow(uint32_t width, uint32_t height, const char* title) : wid
 	}
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // ### TEMP
 
 	initWindow();
 }
@@ -21,6 +20,10 @@ void MageWindow::poolEvents() {
 
 bool MageWindow::shouldClose() {
 	return glfwWindowShouldClose(window);
+}
+
+void MageWindow::setFramebufferSizeCallback(GLFWframebuffersizefun callback) {
+	glfwSetFramebufferSizeCallback(window, callback);
 }
 
 GLFWwindow* MageWindow::getGLFWWindow() const {
@@ -41,4 +44,8 @@ void MageWindow::initWindow() {
 		glfwTerminate();
 		throw std::runtime_error("FAILED TO CREATE GLFW WINDOW!");
 	}
+}
+
+void MageWindow::setWindowUserPointer(void* userPointer) {
+	glfwSetWindowUserPointer(window, userPointer);
 }

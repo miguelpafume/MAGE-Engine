@@ -16,6 +16,10 @@ public:
 	void poolEvents();
 	bool shouldClose();
 
+	void setWindowUserPointer(void* userPointer);
+
+	void setFramebufferSizeCallback(GLFWframebuffersizefun callback);
+
 	GLFWwindow* getGLFWWindow() const;
 	uint32_t getWidth() const;
 	uint32_t getHeight() const;
