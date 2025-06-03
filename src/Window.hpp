@@ -5,35 +5,32 @@
 
 #include <stdexcept>
 
+namespace MAGE {
 class Window {
 public:
 	Window(uint32_t width, uint32_t height, const char* title);
 	~Window();
 
-	Window(const Window&) = delete;
-	Window& operator=(const Window&) = delete;
+	void poolEvents() { glfwPollEvents(); }
+	bool shouldClose() { return glfwWindowShouldClose(m_window); }
 
-	void poolEvents();
-	bool shouldClose();
+	bool wasResized() const { return m_FramebufferResized; }
+	void resetResizeFlag() { m_FramebufferResized = false; }
+	void getFramebufferSize(int* width, int* height) { glfwGetFramebufferSize(m_window, width, height); }
 
-	// RESIZE WINDOW
-	bool wasResized() const;
-	void resetResizeFlag();
-	void getFramebufferSize(int* width, int* height);
-
-	GLFWwindow* getGLFWWindow() const;
-	uint32_t getWidth() const;
-	uint32_t getHeight() const;
+	GLFWwindow* getGLFWWindow() const { return m_window; }
+	uint32_t getWidth() const { return m_width; }
+	uint32_t getHeight() const { return m_height; }
 
 private:
-	GLFWwindow* window;
-	uint32_t width;
-	uint32_t height;
-	const char* title;
+	GLFWwindow* m_window;
+	uint32_t m_width;
+	uint32_t m_height;
+	const char* m_title;
 
-	// RESIZE WINDOW
+	bool m_FramebufferResized = false;
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
-	bool framebufferResized = false;
-	
+
 	void initWindow();
 };
+} // namespace MAGE

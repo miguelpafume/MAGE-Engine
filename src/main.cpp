@@ -1,3 +1,5 @@
+#define DEBUG
+
 // GLFW & Vulkan
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
@@ -25,14 +27,13 @@
 #include <stdexcept>
 
 // CUSTOM
-#include "Mage.hpp"
 #include "Window.hpp"
 
 // DEBUG
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
+#ifdef DEBUG
 const bool enableValidationLayers = true;
+#else
+const bool enableValidationLayers = false;
 #endif
 
 struct Vertex {
@@ -129,7 +130,7 @@ public:
 	}
 
 private:
-	std::unique_ptr<Window> window;
+	std::unique_ptr<MAGE::Window> window;
 	VkDebugUtilsMessengerEXT debugMessenger;
 	
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -165,7 +166,7 @@ private:
 	VkDeviceMemory vertexBufferMemory;
 
 	void initWindow() {
-		window = std::make_unique<Window>(WIDTH, HEIGHT, "Vulkan");
+		window = std::make_unique<MAGE::Window>(WIDTH, HEIGHT, "Mage");
 	}
 
 	void initVulkan() {
