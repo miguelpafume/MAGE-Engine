@@ -27,8 +27,10 @@ private:
 	uint32_t m_width;
 	uint32_t m_height;
 	const char* m_title;
-
+	
 	bool m_FramebufferResized = false;
+
+private:
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 	void initWindow();
