@@ -34,4 +34,15 @@ const std::vector<const char*> g_validationLayers = {
 	"VK_LAYER_KHRONOS_validation"
 };
 
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	VkDebugUtilsMessageTypeFlagsEXT messageType,
+	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	void* pUserData) {
+
+	std::cerr << "VALIDATION LAYER: " << pCallbackData->pMessage << std::endl;
+
+	return VK_FALSE;
+}
+
 } // namespace MAGE
