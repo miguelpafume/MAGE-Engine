@@ -1,13 +1,79 @@
 #include "Device.hpp"
 
 namespace MAGE {
-Device::Device(VkInstance instance, VkSurfaceKHR surface) : m_instance(instance), m_surface(surface) {
+Device::Device(Window& window) : window(window) {
+	createInstance();
+	setupDebugMessenger();
+	createSurface();
+	
 	pickPhysicalDevice();
 	createLogicalDevice();
+
+	// createCommandPool();
 }
 
-void Device::cleanup() {
+Device::~Device() {
+	if (enableValidationLayers)
+		destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+	
 	vkDestroyDevice(m_device, nullptr);
+
+	vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
+	vkDestroyInstance(m_instance, nullptr);
+}
+
+void Device::createInstance() {
+	if (enableValidationLayers && !checkValidationLayerSupport()) {
+		throw std::runtime_error("VALIDATION LAYERS REQUESTED, BUT NOT AVAILABLE!");
+	}
+
+	VkApplicationInfo appInfo{};
+
+	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	appInfo.pApplicationName = "Hello Triangle";
+	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.pEngineName = "No Engine";
+	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+	appInfo.apiVersion = VK_API_VERSION_1_0;
+
+	VkInstanceCreateInfo createInfo{};
+
+	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	createInfo.pApplicationInfo = &appInfo;
+
+	std::vector<const char*> extensions = getRequiredExtensions();
+
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	createInfo.ppEnabledExtensionNames = extensions.data();
+
+	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+
+	if (enableValidationLayers) {
+		createInfo.enabledLayerCount = static_cast<uint32_t>(MAGE::g_validationLayers.size());
+		createInfo.ppEnabledLayerNames = MAGE::g_validationLayers.data();
+
+		populateDebugMessengerCreateInfo(debugCreateInfo);
+		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+	}
+	else {
+		createInfo.enabledLayerCount = 0;
+		createInfo.pNext = nullptr;
+	}
+
+	if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS) {
+		throw std::runtime_error("FAILED TO CREATE INSTANCE!");
+	}
+}
+
+void Device::setupDebugMessenger() {
+	if (!enableValidationLayers) return;
+
+	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+	populateDebugMessengerCreateInfo(createInfo);
+
+	if (createDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
+		throw std::runtime_error("FAILES TO SET UP DEBUG MESSENGER!");
+	}
 }
 
 uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
@@ -124,6 +190,12 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice) {
 	}
 
 	return indices;
+}
+
+void Device::createSurface() {
+	if (glfwCreateWindowSurface(m_instance, window.getGLFWWindow(), nullptr, &m_surface) != VK_SUCCESS) {
+		throw std::runtime_error("FAILED TO CREATE WINDOW SURFACE!");
+	}
 }
 
 QueueFamilyIndices Device::getQueueFamilies() {
