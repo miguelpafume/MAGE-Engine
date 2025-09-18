@@ -144,10 +144,10 @@ void SwapChain::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imag
 
 	VkRenderPassBeginInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = renderPass;
-	renderPassInfo.framebuffer = swapChain->getSwapChainFramebuffers()[imageIndex];
+	renderPassInfo.renderPass = m_renderPass;
+	renderPassInfo.framebuffer = m_swapChainFramebuffers[imageIndex];
 	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = swapChain->getSwapChainExtent();
+	renderPassInfo.renderArea.extent = m_swapChainExtent;
 
 	VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 	renderPassInfo.clearValueCount = 1;

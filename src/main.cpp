@@ -28,6 +28,7 @@
 #include "Window.hpp"
 #include "Device.hpp"
 #include "Mage.hpp"
+#include "Renderer.hpp"
 
 struct Vertex {
 	glm::vec2 pos;
@@ -99,17 +100,13 @@ public:
 
 private:
 	std::unique_ptr<MAGE::Window> window;
-	VkDebugUtilsMessengerEXT debugMessenger;
-
 	std::unique_ptr<MAGE::Device> device;
+	std::unique_ptr<MAGE::Renderer> renderer;
 
-	std::unique_ptr<MAGE::SwapChain> swapChain;
+	VkDebugUtilsMessengerEXT debugMessenger;
 
 	VkPipeline graphicsPipeline;
 	VkPipelineLayout pipelineLayout;
-
-	VkCommandPool commandPool;
-	std::vector<VkCommandBuffer> commandBuffers;
 
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
@@ -128,7 +125,7 @@ private:
 		swapChain->createFramebuffers();
 		createCommandPool();
 		createVertexBuffer();
-		createCommandBuffer();
+		renderer->createCommandBuffer();
 		swapChain->createSyncObjects();
 	}
 
@@ -161,20 +158,6 @@ private:
 		vkMapMemory(device->getDevice(), vertexBufferMemory, 0, bufferInfo.size, 0, &data);
 		memcpy(data, vertices.data(), (size_t) bufferInfo.size);
 		vkUnmapMemory(device->getDevice(), vertexBufferMemory);
-	}
-
-	void createCommandBuffer() {
-		commandBuffers.resize(MAGE::SwapChain::MAX_FRAMES_IN_FLIGHT);
-
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.commandPool = commandPool;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandBufferCount = (uint32_t)commandBuffers.size();
-
-		if (vkAllocateCommandBuffers(device->getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-			throw std::runtime_error("FAILED TO ALLOCATE COMMAND BUFFERS!");
-		}
 	}
 
 	void createCommandPool() {

@@ -28,12 +28,13 @@ public:
 	VkQueue getPresentQueue() const { return m_presentQueue; }
 	VkInstance getInstance() const { return m_instance; }
 	VkSurfaceKHR getSurface() const { return m_surface; }
+	VkCommandPool getCommandPool() const { return commandPool; }
 
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 	QueueFamilyIndices getQueueFamilies();
 
 private:
-	MAGE::Window &window;
+	MAGE::Window& window;
 
 	VkInstance m_instance;
 	VkSurfaceKHR m_surface;
@@ -43,6 +44,8 @@ private:
 
 	VkQueue m_graphicsQueue;
 	VkQueue m_presentQueue;
+
+	VkCommandPool commandPool;
 
 private:
 	void pickPhysicalDevice();

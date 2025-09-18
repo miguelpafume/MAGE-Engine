@@ -16,7 +16,6 @@ public:
 	void createSyncObjects();
 	void createFramebuffers();
 	void createRenderPass();
-	void recreateSwapChain();
 	void createImageViews();
 	void createSwapChain();
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
