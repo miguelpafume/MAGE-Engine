@@ -9,17 +9,22 @@ namespace MAGE {
 
 class Window {
 public:
-	Window(int width, int height, std::string windowName);
+	Window(uint32_t width, uint32_t height, std::string windowName);
 	~Window();
+
+	Window(const Window&) = delete;
+	Window &operator=(const Window&) = delete;
+
+	bool Window::shouldClose() { return glfwWindowShouldClose(m_window); }
 
 private:
 	void initWindow();
 
-	const int m_width;
-	const int m_height;
+	const uint32_t m_width;
+	const uint32_t m_height;
 	const std::string m_windowName;
 
-	GLFWwindow* window;
+	GLFWwindow* m_window;
 };
 
 } // namespace MAGE
