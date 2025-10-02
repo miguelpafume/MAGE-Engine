@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <stdexcept>
+
+#include "Device.hpp"
 
 namespace MAGE {
 
@@ -14,6 +17,7 @@ private:
 	static std::vector<char> readFile(const std::string& fileName);
 
 	void createGraphicsPipeline(const std::string& vertexFile, const std::string& fragmentFile);
+	VkShaderModule createShaderModule(const std::vector<char>& code);
 };
 
 } // namespace MAGE
