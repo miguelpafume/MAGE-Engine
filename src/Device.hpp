@@ -16,10 +16,10 @@ public:
 	~Device();
 
 	VkCommandPool getCommandPool() { return m_commandPool; }
-	VkDevice device() { return m_device; }
-	VkSurfaceKHR surface() { return m_surface; }
-	VkQueue graphicsQueue() { return m_graphicsQueue; }
-	VkQueue presentQueue() { return m_presentQueue; }
+	VkDevice getDevice() { return m_device; }
+	VkSurfaceKHR getSurface() { return m_surface; }
+	VkQueue getGraphicsQueue() { return m_graphicsQueue; }
+	VkQueue getPresentQueue() { return m_presentQueue; }
 
 	SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice); }
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
