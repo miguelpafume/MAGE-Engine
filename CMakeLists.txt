@@ -48,15 +48,16 @@ set_target_properties(glfw PROPERTIES FOLDER "Dependencies")
 set_target_properties(update_mappings PROPERTIES FOLDER "Dependencies")
 set_target_properties(glm PROPERTIES FOLDER "Dependencies")
 
-add_executable(${PROJECT_NAME}
+add_executable(
+  ${PROJECT_NAME}
   ${SOURCES}
   ${HEADERS}
   ${SHADERS}
   ${SCRIPTS}
 )
 
-target_include_directories(${PROJECT_NAME}
-PRIVATE
+target_include_directories(
+  ${PROJECT_NAME} PRIVATE
   ${SRC_DIR}
   ${INCLUDE_DIR}
   ${glm_SOURCE_DIR}
@@ -64,11 +65,25 @@ PRIVATE
   ${Vulkan_INCLUDE_DIRS}
 )
 
-target_link_libraries(${PROJECT_NAME}
-PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATE
   glfw
   glm
   Vulkan::Vulkan
 )
 
+#Linux
+if (UNIX AND NOT APPLE)
+  find_package(X11 REQUIRED)
+
+  target_link_libraries(${PROJECT_NAME} PRIVATE
+    ${X11_LIBRARIES}
+    Xrandr
+    Xxf86vm
+    Xi
+    pthread
+    dl
+  )
+endif()
+
+# Windows (won't do anything on linux)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})

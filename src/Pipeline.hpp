@@ -2,8 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <fstream>
-#include <stdexcept>
 
 #include "Device.hpp"
 

@@ -15,7 +15,7 @@ public:
 	Window(const Window&) = delete;
 	Window &operator=(const Window&) = delete;
 
-	bool Window::shouldClose() { return glfwWindowShouldClose(m_window); }
+	bool shouldClose() { return glfwWindowShouldClose(m_window); }
 
 private:
 	void initWindow();
