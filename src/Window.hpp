@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <string>
+#include <stdexcept>
 
 namespace MAGE {
 
@@ -17,7 +18,9 @@ public:
 
 	bool shouldClose() { return glfwWindowShouldClose(m_window); }
 
-private:
+	void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+
+	private:
 	void initWindow();
 
 	const uint32_t m_width;

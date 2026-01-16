@@ -68,6 +68,21 @@ void Device::createInstance() {
     hasGflwRequiredInstanceExtensions(); // ### What is this??
 }
 
+void Device::setupDebugMessenger() {
+	if (!enableValidationLayers) return;
+
+	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+	populateDebugMessengerCreateInfo(createInfo);
+
+	if (vkCreateDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
+		throw std::runtime_error("FAILED TO SET UP DEBUG MESSENGER!");
+	}
+}
+
+void Device::createSurface() {
+	window.createWindowSurface(m_instance, &m_surface);
+}
+
 void Device::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
@@ -138,14 +153,16 @@ void Device::createLogicalDevice() {
 	vkGetDeviceQueue(m_device, indices.presentFamily, 0, &m_presentQueue);
 }
 
-void Device::setupDebugMessenger() {
-	if (!enableValidationLayers) return;
+void Device::createCommandPool() {
+	QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
 
-	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-	populateDebugMessengerCreateInfo(createInfo);
+	VkCommandPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-	if (createDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
-		throw std::runtime_error("FAILES TO SET UP DEBUG MESSENGER!");
+	if (vkCreateCommandPool(m_device, &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
+		throw std::runtime_error("FAILED TO CREATE COMMAND POOL!");
 	}
 }
 
@@ -161,7 +178,7 @@ uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prope
 	throw std::runtime_error("FAILED TO FIND A SUITABLE MEMORY TYPE!");
 }
 
-QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice) {
+QueueFamilyIndices Device::getQueueFamilies(VkPhysicalDevice physicalDevice) {
 	MAGE::QueueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
@@ -193,46 +210,8 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice physicalDevice) {
 	return indices;
 }
 
-void Device::createSurface() {
-	if (glfwCreateWindowSurface(m_instance, window.getGLFWWindow(), nullptr, &m_surface) != VK_SUCCESS) {
-		throw std::runtime_error("FAILED TO CREATE WINDOW SURFACE!");
-	}
-}
-
-QueueFamilyIndices Device::getQueueFamilies() {
-	MAGE::QueueFamilyIndices indices;
-
-	uint32_t queueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
-
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilies.data());
-
-	int i = 0;
-	for (const auto& queueFamily : queueFamilies) {
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-			indices.graphicsFamily = i;
-		}
-
-		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, i, m_surface, &presentSupport);
-
-		if (presentSupport) {
-			indices.presentFamily = i;
-		}
-
-		if (indices.isComplete()) {
-			break;
-		}
-
-		i++;
-	}
-
-	return indices;
-}
-
 bool Device::isDeviceSuitable(VkPhysicalDevice physicalDevice) {
-	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+	QueueFamilyIndices indices = getQueueFamilies(physicalDevice);
 
 	bool extensionsSupported = checkDeviceExtensionSupport(physicalDevice);
 
@@ -272,13 +251,31 @@ bool Device::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
 
-	std::set<std::string> requiredExtensions(g_deviceExtensions.begin(), g_deviceExtensions.end());
+	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
 	for (const auto& extension : availableExtensions) {
 		requiredExtensions.erase(extension.extensionName);
 	}
 
 	return requiredExtensions.empty();
+}
+
+bool Device::checkValidationLayerSupport() {
+	uint32_t layerCount;
+	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+	std::vector<VkLayerProperties> availableLayers(layerCount);
+	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+	for (const char* layerName : validationLayers) {
+		for (const auto& layerProperties : availableLayers) {
+			if (strcmp(layerName, layerProperties.layerName) == 0) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 }

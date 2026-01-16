@@ -11,8 +11,15 @@ Window::~Window() {
 	glfwTerminate();
 }
 
-void Window::initWindow() {
-	glfwInit();
+void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) {
+	if (glfwCreateWindowSurface(instance, m_window, nullptr, surface) != VK_SUCCESS) {
+		throw std::runtime_error("FAILED TO CREATE WINDOW SURFACE!");
+	}
+}
+
+void Window::initWindow()
+{
+    glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
