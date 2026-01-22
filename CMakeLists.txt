@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.26)
-project(mage_engine)
+cmake_minimum_required(VERSION 3.26.0)
+project(mage_engine VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -33,6 +33,7 @@ set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glm glfw)
 
 find_package(Vulkan REQUIRED)
+message(STATUS "Vulkan include dir: $ENV{VULKAN_SDK}")
 
 file(GLOB_RECURSE SOURCES ${SRC_DIR}/*.cpp)
 file(GLOB_RECURSE HEADERS ${SRC_DIR}/*.hpp ${SRC_DIR}/*.h)

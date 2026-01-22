@@ -2,6 +2,16 @@
 
 namespace MAGE {
 
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	VkDebugUtilsMessageTypeFlagsEXT messageType,
+	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	void* pUserData) {
+	std::cerr << "VALIDATION LAYER: " << pCallbackData->pMessage << std::endl;
+
+	return VK_FALSE;
+}
+
 Device::Device(Window& window) : window(window) {
 	createInstance();
 	setupDebugMessenger();
@@ -18,7 +28,7 @@ Device::~Device() {
     vkDestroyDevice(m_device, nullptr);
 
 	if (enableValidationLayers) {
-        vkDestroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
+        destroyDebugUtilsMessengerEXT(m_instance, m_debugMessenger, nullptr);
     }	
 	
     vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
@@ -65,7 +75,50 @@ void Device::createInstance() {
 		throw std::runtime_error("FAILED TO CREATE INSTANCE!");
 	}
 
-    hasGflwRequiredInstanceExtensions(); // ### What is this??
+    hasGflwRequiredInstanceExtensions();
+
+	std::cout << "Instance created:" << m_instance << std::endl;
+}
+
+void Device::hasGflwRequiredInstanceExtensions() {
+	uint32_t glfwExtensionCount = 0;
+	vkEnumerateInstanceExtensionProperties(nullptr, &glfwExtensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> extensions(glfwExtensionCount);
+	vkEnumerateInstanceExtensionProperties(nullptr, &glfwExtensionCount, extensions.data());
+
+	std::cout << "AVAILABLE EXTENSIONS:" << std::endl;
+	std::unordered_set<std::string> availableExtensions;
+	for (const VkExtensionProperties &extension : extensions) {
+		std::cout << "\t" << extension.extensionName << std::endl;
+		availableExtensions.insert(extension.extensionName);
+	}
+
+	std::cout << "REQUIRED EXTENSIONS:" << std::endl;
+	std::vector<const char*> requiredExtensions = getRequiredExtensions();
+	std::cout << requiredExtensions.size() << std::endl; // ###TEMP
+
+	for (const char *required : requiredExtensions) {
+		std::cout << "\t" << required << std::endl;
+		if (availableExtensions.find(required) == availableExtensions.end()) {
+			throw std::runtime_error("MISSING REQUIRED GLFW EXTENSION!");
+		}
+	}
+}
+
+std::vector<const char*> Device::getRequiredExtensions() {
+	uint32_t glfwExtensionCount = 0;
+	const char** glfwExtensions;
+	
+	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+	if (enableValidationLayers) {
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	}
+
+	return extensions;
 }
 
 void Device::setupDebugMessenger() {
@@ -74,7 +127,7 @@ void Device::setupDebugMessenger() {
 	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 	populateDebugMessengerCreateInfo(createInfo);
 
-	if (vkCreateDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
+	if (createDebugUtilsMessengerEXT(m_instance, &createInfo, nullptr, &m_debugMessenger) != VK_SUCCESS) {
 		throw std::runtime_error("FAILED TO SET UP DEBUG MESSENGER!");
 	}
 }
@@ -166,18 +219,6 @@ void Device::createCommandPool() {
 	}
 }
 
-uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
-	VkPhysicalDeviceMemoryProperties memProperties;
-	vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memProperties);
-
-	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
-			return i;
-	}
-
-	throw std::runtime_error("FAILED TO FIND A SUITABLE MEMORY TYPE!");
-}
-
 QueueFamilyIndices Device::getQueueFamilies(VkPhysicalDevice physicalDevice) {
 	MAGE::QueueFamilyIndices indices;
 
@@ -191,6 +232,7 @@ QueueFamilyIndices Device::getQueueFamilies(VkPhysicalDevice physicalDevice) {
 	for (const auto& queueFamily : queueFamilies) {
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 			indices.graphicsFamily = i;
+			indices.graphicsFamilyHasValue = true;
 		}
 
 		VkBool32 presentSupport = false;
@@ -198,6 +240,7 @@ QueueFamilyIndices Device::getQueueFamilies(VkPhysicalDevice physicalDevice) {
 
 		if (presentSupport) {
 			indices.presentFamily = i;
+			indices.presentFamilyHasValue = true;
 		}
 
 		if (indices.isComplete()) {
@@ -223,8 +266,37 @@ bool Device::isDeviceSuitable(VkPhysicalDevice physicalDevice) {
     
     VkPhysicalDeviceFeatures deviceFeatures;
 	vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+
+	if (!indices.isComplete()) std::cout << "Device rejected: Incomplete Queue Families" << std::endl;
+	if (!extensionsSupported) std::cout << "Device rejected: Extensions not supported" << std::endl;
+	if (!swapChainAdequate) std::cout << "Device rejected: Swapchain not adequate" << std::endl;
+	if (!deviceFeatures.geometryShader) std::cout << "Device rejected: No Geometry Shader" << std::endl;
+	if (!deviceFeatures.samplerAnisotropy) std::cout << "Device rejected: No Anisotropy" << std::endl;
 	
-    return indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.geometryShader && deviceFeatures.samplerAnisotropy;
+    return indices.isComplete() && extensionsSupported && swapChainAdequate && deviceFeatures.geometryShader; //  ###not including: deviceFeatures.samplerAnisotropy
+}
+
+SwapChainSupportDetails Device::querySwapChainSupport(VkPhysicalDevice physicalDevice) {
+	SwapChainSupportDetails details;
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_surface, &details.capabilities);
+
+	uint32_t formatCount;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &formatCount, nullptr);
+
+	if (formatCount != 0) {
+		details.formats.resize(formatCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_surface, &formatCount, details.formats.data());
+	}
+
+	uint32_t presentModeCount;
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, nullptr);
+
+	if (presentModeCount != 0) {
+		details.presentModes.resize(presentModeCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_surface, &presentModeCount, details.presentModes.data());
+	}
+
+	return details;
 }
 
 int Device::rateDeviceSuitability(VkPhysicalDevice physicalDevice) {
@@ -268,14 +340,44 @@ bool Device::checkValidationLayerSupport() {
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 	for (const char* layerName : validationLayers) {
+		bool layerFound = false;
+
 		for (const auto& layerProperties : availableLayers) {
 			if (strcmp(layerName, layerProperties.layerName) == 0) {
-				return true;
+				layerFound = true;
+				break;
 			}
+		}
+
+		if (!layerFound) {
+			return false;
 		}
 	}
 
-	return false;
+	return true;
 }
 
+void Device::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+	createInfo = {};
+	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	createInfo.pfnUserCallback = debugCallback;
+	createInfo.pUserData = nullptr;
 }
+
+uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+	VkPhysicalDeviceMemoryProperties memProperties;
+	vkGetPhysicalDeviceMemoryProperties(m_physicalDevice, &memProperties);
+
+	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+		if ((typeFilter & (1 << i)) && 
+			(memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+			return i;
+		}
+	}
+
+	throw std::runtime_error("FAILED TO FIND A SUITABLE MEMORY TYPE!");
+}
+
+} // namespace MAGE

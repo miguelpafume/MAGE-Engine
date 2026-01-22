@@ -4,8 +4,10 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <iostream>
 
 namespace MAGE {
+
 struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
@@ -19,5 +21,8 @@ struct QueueFamilyIndices {
 	bool presentFamilyHasValue = false;
 	bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
 };
+
+VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
+void destroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
 } // namespace MAGE

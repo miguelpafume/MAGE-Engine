@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Window.hpp"
+#include "Device.hpp"
 #include "Pipeline.hpp"
 
 namespace MAGE {
@@ -14,7 +15,13 @@ private:
 	static constexpr uint32_t HEIGHT = 800;
 
 	Window m_window{WIDTH, HEIGHT, "M.A.G.E."};
-	Pipeline m_pipeline{"simple_shader.vert.spv", "simple_shader.frag.spv" };
+	Device m_device{m_window};
+	Pipeline m_pipeline{
+		m_device,
+		Pipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT),
+		"simple_shader.vert.spv",
+		"simple_shader.frag.spv"
+	};
 };
 
 } // namespace MAGE
