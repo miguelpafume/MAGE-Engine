@@ -12,7 +12,6 @@ namespace MAGE {
 struct PipelineConfigInfo {
 	VkRect2D scissor;
 	VkViewport viewport;
-	VkPipelineViewportStateCreateInfo viewportInfo;
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
 	VkPipelineRasterizationStateCreateInfo rasterizationInfo;
 	VkPipelineMultisampleStateCreateInfo multisampleInfo;

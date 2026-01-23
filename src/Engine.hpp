@@ -3,6 +3,7 @@
 #include "Window.hpp"
 #include "Device.hpp"
 #include "Pipeline.hpp"
+#include "SwapChain.hpp"
 
 namespace MAGE {
 
