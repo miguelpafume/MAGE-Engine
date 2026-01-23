@@ -3,12 +3,25 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cassert>
 
 #include "Device.hpp"
 
 namespace MAGE {
 
 struct PipelineConfigInfo {
+	VkRect2D scissor;
+	VkViewport viewport;
+	VkPipelineViewportStateCreateInfo viewportInfo;
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
+	VkPipelineRasterizationStateCreateInfo rasterizationInfo;
+	VkPipelineMultisampleStateCreateInfo multisampleInfo;
+	VkPipelineColorBlendAttachmentState colorBlendAttachment;
+	VkPipelineColorBlendStateCreateInfo colorBlendInfo;
+	VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+	VkPipelineLayout pipelineLayout = nullptr;
+	VkRenderPass renderPass = nullptr;
+	uint32_t subpass = 0;
 };
 
 class Pipeline {
@@ -19,7 +32,7 @@ public:
 		const std::string &vertexFile,
 		const std::string &fragmentFile);
 
-	~Pipeline() {};
+	~Pipeline();
 
 	Pipeline(const Pipeline&) = delete;
 	void operator=(const Pipeline&) = delete;
