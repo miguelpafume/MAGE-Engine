@@ -17,6 +17,7 @@ private:
 
 	Window m_window{WIDTH, HEIGHT, "M.A.G.E."};
 	Device m_device{m_window};
+	SwapChain m_swapChain{m_device, m_window.getExtent()};
 	Pipeline m_pipeline{
 		m_device,
 		Pipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT),
