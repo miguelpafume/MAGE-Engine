@@ -73,13 +73,13 @@ void Device::createInstance()
 		.apiVersion = VK_API_VERSION_1_3
 	};
 
-	VkInstanceCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	createInfo.pApplicationInfo = &appInfo;
-
 	std::vector<const char*> extensions = getRequiredExtensions();
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
+	VkInstanceCreateInfo createInfo{
+		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+		.pApplicationInfo = &appInfo,
+		.enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+		.ppEnabledExtensionNames = extensions.data()
+	};
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
@@ -208,13 +208,14 @@ void Device::createLogicalDevice() {
 	VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
 
-	VkDeviceCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-	createInfo.pQueueCreateInfos = queueCreateInfos.data();
-	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-	createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+	VkDeviceCreateInfo createInfo{
+		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+		.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
+		.pQueueCreateInfos = queueCreateInfos.data(),
+		.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()),
+		.ppEnabledExtensionNames = deviceExtensions.data(),
+		.pEnabledFeatures = &deviceFeatures
+	};
 
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -234,10 +235,11 @@ void Device::createLogicalDevice() {
 void Device::createCommandPool() {
 	QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
 
-	VkCommandPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
-	poolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	VkCommandPoolCreateInfo poolInfo{
+		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+		.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+		.queueFamilyIndex = queueFamilyIndices.graphicsFamily
+	};
 
 	if (vkCreateCommandPool(m_device, &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
 		throw std::runtime_error("FAILED TO CREATE COMMAND POOL!");
