@@ -1,9 +1,5 @@
 #pragma once
 
-#include <stdexcept>
-#include <map>
-#include <set>
-#include <unordered_set>
 #include <vector>
 
 #include "Window.hpp"

@@ -1,3 +1,9 @@
+#include <stdexcept>
+#include <map>
+#include <set>
+#include <unordered_set>
+#include <cstring>
+
 #include "Device.hpp"
 
 namespace MAGE {

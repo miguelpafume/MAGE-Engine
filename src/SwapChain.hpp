@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include <vulkan/vulkan.h>
@@ -25,8 +24,8 @@ public:
     size_t imageCount() { return m_swapChainImages.size(); }
     VkFormat getSwapChainImageFormat() { return m_swapChainImageFormat; }
     VkExtent2D getSwapChainExtent() { return m_swapChainExtent; }
-    uint32_t width() { return m_swapChainExtent.width; }
-    uint32_t height() { return m_swapChainExtent.height; }
+    uint32_t getWidth() { return m_swapChainExtent.width; }
+    uint32_t getHeight() { return m_swapChainExtent.height; }
     float extentAspectRatio() { return static_cast<float>(m_swapChainExtent.width) / static_cast<float>(m_swapChainExtent.height); }
     
     VkFormat findDepthFormat();
