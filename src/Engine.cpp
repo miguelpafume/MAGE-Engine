@@ -38,7 +38,8 @@ void Engine::createPipelineLayout() {
 }
 
 void Engine::createPipeline() {
-	PipelineConfigInfo pipelineConfig = Pipeline::defaultPipelineConfigInfo(m_swapChain.getWidth(), m_swapChain.getHeight());
+	PipelineConfigInfo pipelineConfig;
+	Pipeline::defaultPipelineConfigInfo(m_swapChain.getWidth(), m_swapChain.getHeight(), pipelineConfig);
 	pipelineConfig.pipelineLayout = m_pipelineLayout;
 	pipelineConfig.renderPass = m_swapChain.getRenderPass();
 

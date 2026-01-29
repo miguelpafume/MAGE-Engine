@@ -69,7 +69,8 @@ void Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo, cons
 		.pViewportState = &viewportInfo,
 		.pRasterizationState = &configInfo.rasterizationInfo,
 		.pMultisampleState = &configInfo.multisampleInfo,
-		.pColorBlendState = nullptr,
+		.pDepthStencilState = &configInfo.depthStencilInfo,
+		.pColorBlendState = &configInfo.colorBlendInfo,
 		.pDynamicState = nullptr,
 
 		.layout = configInfo.pipelineLayout,
@@ -97,9 +98,7 @@ void Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule 
 	}
 }
 
-PipelineConfigInfo Pipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height) {
-	PipelineConfigInfo configInfo{};
-
+void Pipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height, PipelineConfigInfo &configInfo) {
 	configInfo.inputAssemblyInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
 		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -180,8 +179,6 @@ PipelineConfigInfo Pipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t 
 		.minDepthBounds = 0.0f,
 		.maxDepthBounds = 1.0f
 	};
- 
-	return configInfo;
 }
 
 std::vector<char> Pipeline::readFile(const std::string& filename) {

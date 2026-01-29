@@ -11,8 +11,8 @@ namespace MAGE {
 
 struct PipelineConfigInfo {
 	PipelineConfigInfo() = default;
-	//PipelineConfigInfo(const PipelineConfigInfo&) = delete;
-    //PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+	PipelineConfigInfo(const PipelineConfigInfo&) = delete;
+    PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
 	VkRect2D scissor {};
 	VkViewport viewport {};
@@ -42,7 +42,7 @@ public:
 	Pipeline(const Pipeline&) = delete;
 	void operator=(const Pipeline&) = delete;
 	
-	static PipelineConfigInfo defaultPipelineConfigInfo(uint32_t width, uint32_t height);
+	static void defaultPipelineConfigInfo(uint32_t width, uint32_t height, PipelineConfigInfo &configInfo);
 
 private:
 	static std::vector<char> readFile(const std::string &fileName);
