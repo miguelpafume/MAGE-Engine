@@ -10,14 +10,20 @@
 namespace MAGE {
 
 struct PipelineConfigInfo {
-	VkRect2D scissor;
-	VkViewport viewport;
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo;
-	VkPipelineRasterizationStateCreateInfo rasterizationInfo;
-	VkPipelineMultisampleStateCreateInfo multisampleInfo;
-	VkPipelineColorBlendAttachmentState colorBlendAttachment;
-	VkPipelineColorBlendStateCreateInfo colorBlendInfo;
-	VkPipelineDepthStencilStateCreateInfo depthStencilInfo;
+	PipelineConfigInfo() = default;
+	//PipelineConfigInfo(const PipelineConfigInfo&) = delete;
+    //PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
+
+	VkRect2D scissor {};
+	VkViewport viewport {};
+
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo {};
+	VkPipelineRasterizationStateCreateInfo rasterizationInfo {};
+	VkPipelineMultisampleStateCreateInfo multisampleInfo {};
+	VkPipelineColorBlendAttachmentState colorBlendAttachment {};
+	VkPipelineColorBlendStateCreateInfo colorBlendInfo {};
+	VkPipelineDepthStencilStateCreateInfo depthStencilInfo {};
+
 	VkPipelineLayout pipelineLayout = nullptr;
 	VkRenderPass renderPass = nullptr;
 	uint32_t subpass = 0;

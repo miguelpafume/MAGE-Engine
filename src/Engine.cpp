@@ -39,10 +39,8 @@ void Engine::createPipelineLayout() {
 
 void Engine::createPipeline() {
 	PipelineConfigInfo pipelineConfig = Pipeline::defaultPipelineConfigInfo(m_swapChain.getWidth(), m_swapChain.getHeight());
-	pipelineConfig = {
-		.pipelineLayout = m_pipelineLayout,
-		.renderPass = m_swapChain.getRenderPass()
-	};
+	pipelineConfig.pipelineLayout = m_pipelineLayout;
+	pipelineConfig.renderPass = m_swapChain.getRenderPass();
 
 	m_pipeline = std::make_unique<Pipeline>(
 		m_device,
