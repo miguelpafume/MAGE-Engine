@@ -19,14 +19,14 @@ public:
     void operator=(const SwapChain &) = delete;
 
     VkFramebuffer getFrameBuffer(int index) { return m_swapChainFramebuffers[index]; }
-    VkRenderPass getRenderPass() { return m_renderPass; }
-    VkImageView getImageView(int index) { return m_swapChainImageViews[index]; }
-    size_t imageCount() { return m_swapChainImages.size(); }
-    VkFormat getSwapChainImageFormat() { return m_swapChainImageFormat; }
-    VkExtent2D getSwapChainExtent() { return m_swapChainExtent; }
-    uint32_t getWidth() { return m_swapChainExtent.width; }
-    uint32_t getHeight() { return m_swapChainExtent.height; }
-    float extentAspectRatio() { return static_cast<float>(m_swapChainExtent.width) / static_cast<float>(m_swapChainExtent.height); }
+    VkRenderPass getRenderPass()            { return m_renderPass; }
+    VkImageView getImageView(int index)     { return m_swapChainImageViews[index]; }
+    size_t getImageCount()                  { return m_swapChainImages.size(); }
+    VkFormat getSwapChainImageFormat()      { return m_swapChainImageFormat; }
+    VkExtent2D getSwapChainExtent()         { return m_swapChainExtent; }
+    uint32_t getWidth()                     { return m_swapChainExtent.width; }
+    uint32_t getHeight()                    { return m_swapChainExtent.height; }
+    float extentAspectRatio()               { return static_cast<float>(m_swapChainExtent.width) / static_cast<float>(m_swapChainExtent.height); }
     
     VkFormat findDepthFormat();
     VkResult acquireNextImage(uint32_t *imageIndex);

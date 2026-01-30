@@ -42,6 +42,7 @@ public:
 	Pipeline(const Pipeline&) = delete;
 	void operator=(const Pipeline&) = delete;
 	
+	void bind(VkCommandBuffer commandBuffer);
 	static void defaultPipelineConfigInfo(uint32_t width, uint32_t height, PipelineConfigInfo &configInfo);
 
 private:

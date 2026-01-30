@@ -49,10 +49,9 @@ SwapChain::~SwapChain() {
 }
 
 VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) {
-    vkWaitForFences(m_device.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+    vkWaitForFences(m_device.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
-    VkResult result = vkAcquireNextImageKHR(m_device.getDevice(), m_swapChain, std::numeric_limits<uint64_t>::max(), m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, imageIndex);
-
+    VkResult result = vkAcquireNextImageKHR(m_device.getDevice(), m_swapChain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, imageIndex);
     return result;
 }
 
@@ -65,18 +64,18 @@ VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
-    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    VkSemaphore waitSemaphores = m_imageAvailableSemaphores[m_currentFrame];
+    VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = waitSemaphores;
-    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.pWaitSemaphores = &waitSemaphores;
+    submitInfo.pWaitDstStageMask = &waitStages;
 
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = buffers;
 
-    VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
+    VkSemaphore signalSemaphores = m_renderFinishedSemaphores[m_currentFrame];
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = signalSemaphores;
+    submitInfo.pSignalSemaphores = &signalSemaphores;
 
     vkResetFences(m_device.getDevice(), 1, &m_inFlightFences[m_currentFrame]);
     if (vkQueueSubmit(m_device.getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
@@ -87,7 +86,7 @@ VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.pWaitSemaphores = &signalSemaphores;
 
     VkSwapchainKHR swapChains[] = {m_swapChain};
     presentInfo.swapchainCount = 1;
@@ -240,8 +239,8 @@ void SwapChain::createRenderPass() {
 }
 
 void SwapChain::createFramebuffers() {
-    m_swapChainFramebuffers.resize(imageCount());
-    for (size_t i = 0; i < imageCount(); i++) {
+    m_swapChainFramebuffers.resize(getImageCount());
+    for (size_t i = 0; i < getImageCount(); i++) {
         std::array<VkImageView, 2> attachments = {m_swapChainImageViews[i], m_depthImageViews[i]};
 
         VkExtent2D swapChainExtent = getSwapChainExtent();
@@ -264,9 +263,9 @@ void SwapChain::createDepthResources() {
     VkFormat depthFormat = findDepthFormat();
     VkExtent2D swapChainExtent = getSwapChainExtent();
 
-    m_depthImages.resize(imageCount());
-    m_depthImageMemorys.resize(imageCount());
-    m_depthImageViews.resize(imageCount());
+    m_depthImages.resize(getImageCount());
+    m_depthImageMemorys.resize(getImageCount());
+    m_depthImageViews.resize(getImageCount());
 
     for (int i = 0; i < m_depthImages.size(); i++) {
         VkImageCreateInfo imageInfo{};
@@ -308,7 +307,7 @@ void SwapChain::createSyncObjects() {
     m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
     m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    m_imagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
+    m_imagesInFlight.resize(getImageCount(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

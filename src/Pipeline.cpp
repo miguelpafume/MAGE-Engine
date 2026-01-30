@@ -98,8 +98,13 @@ void Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule 
 	}
 }
 
-void Pipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height, PipelineConfigInfo &configInfo) {
-	configInfo.inputAssemblyInfo = {
+void Pipeline::bind(VkCommandBuffer commandBuffer) {
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
+}
+
+void Pipeline::defaultPipelineConfigInfo(uint32_t width, uint32_t height, PipelineConfigInfo &configInfo)
+{
+    configInfo.inputAssemblyInfo = {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
 		.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
 		.primitiveRestartEnable = VK_FALSE
