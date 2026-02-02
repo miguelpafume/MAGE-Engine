@@ -90,8 +90,8 @@ void Device::createInstance()
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
 	if (enableValidationLayers) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+		createInfo.ppEnabledLayerNames = m_validationLayers.data();
 
 		populateDebugMessengerCreateInfo(debugCreateInfo);
 		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
@@ -107,7 +107,7 @@ void Device::createInstance()
 
     hasGflwRequiredInstanceExtensions();
 
-	std::cout << "Instance created:" << m_instance << std::endl;
+	std::cout << "Instance created: " << m_instance << std::endl;
 }
 
 void Device::hasGflwRequiredInstanceExtensions() {
@@ -189,6 +189,10 @@ void Device::pickPhysicalDevice() {
     } else {
         throw std::runtime_error("FAILED TO FIND A SUITABLE GPU!");
     }
+
+	VkPhysicalDeviceProperties deviceProperties;
+	vkGetPhysicalDeviceProperties(m_physicalDevice, &deviceProperties);
+	std::cout << "Physical device selected: " << deviceProperties.deviceName << std::endl;
 }
 
 void Device::createLogicalDevice() {
@@ -211,21 +215,38 @@ void Device::createLogicalDevice() {
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	VkPhysicalDeviceFeatures deviceFeatures{};
-    deviceFeatures.samplerAnisotropy = VK_TRUE;
+	VkPhysicalDeviceVulkan12Features enabledVulkan12Features{
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
+		.descriptorIndexing = VK_TRUE,
+		.descriptorBindingVariableDescriptorCount = VK_TRUE,
+		.runtimeDescriptorArray = VK_TRUE,
+		.bufferDeviceAddress = VK_TRUE
+	};
+	
+	const VkPhysicalDeviceVulkan13Features enabledVulkan13Features{
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
+		.pNext = &enabledVulkan12Features,
+		.synchronization2 = VK_TRUE,
+		.dynamicRendering = VK_TRUE
+	};
+	
+	const VkPhysicalDeviceFeatures deviceFeatures{
+		.samplerAnisotropy = VK_TRUE
+	};
 
 	VkDeviceCreateInfo createInfo{
 		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+		.pNext = &enabledVulkan13Features,
 		.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
 		.pQueueCreateInfos = queueCreateInfos.data(),
-		.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size()),
-		.ppEnabledExtensionNames = deviceExtensions.data(),
+		.enabledExtensionCount = static_cast<uint32_t>(m_deviceExtensions.size()),
+		.ppEnabledExtensionNames = m_deviceExtensions.data(),
 		.pEnabledFeatures = &deviceFeatures
 	};
 
 	if (enableValidationLayers) {
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = validationLayers.data();
+		createInfo.enabledLayerCount = static_cast<uint32_t>(m_validationLayers.size());
+		createInfo.ppEnabledLayerNames = m_validationLayers.data();
 	} else {
 		createInfo.enabledLayerCount = 0;
 	}
@@ -356,7 +377,7 @@ bool Device::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
 
-	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+	std::set<std::string> requiredExtensions(m_deviceExtensions.begin(), m_deviceExtensions.end());
 
 	for (const auto& extension : availableExtensions) {
 		requiredExtensions.erase(extension.extensionName);
@@ -372,7 +393,7 @@ bool Device::checkValidationLayerSupport() {
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const char* layerName : validationLayers) {
+	for (const char* layerName : m_validationLayers) {
 		bool layerFound = false;
 
 		for (const auto& layerProperties : availableLayers) {

@@ -111,8 +111,6 @@ void Engine::createCommandBuffers() {
 void Engine::drawFrame() {
 	uint32_t imageIndex;
 	VkResult result = m_swapChain.acquireNextImage(&imageIndex);
-	std::cout << std::endl;
-	std::cout << imageIndex << std::endl << std::endl;
 
 	if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("FAILED TO ACQUIRE SWAP CHAIN IMAGE!"); //### CAN OCCUR WHEN A WINDOW RESIZES?

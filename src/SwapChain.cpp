@@ -317,7 +317,7 @@ void SwapChain::createSyncObjects() {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    for (size_t i = 0; i < getImageCount(); i++) {
         VkResult imageSemaphore = vkCreateSemaphore(m_device.getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
         VkResult renderSemaphore = vkCreateSemaphore(m_device.getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
         VkResult fence = vkCreateFence(m_device.getDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);

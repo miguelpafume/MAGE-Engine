@@ -49,6 +49,9 @@ set_target_properties(glfw PROPERTIES FOLDER "Dependencies")
 set_target_properties(update_mappings PROPERTIES FOLDER "Dependencies")
 set_target_properties(glm PROPERTIES FOLDER "Dependencies")
 
+# Recompile shaders
+# find_program(SLANG_EXECUTABLE slangc HINTS ${Vulkan_BIN_DIR})
+
 add_executable(
   ${PROJECT_NAME}
   ${SOURCES}
