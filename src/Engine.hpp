@@ -7,6 +7,7 @@
 #include "Device.hpp"
 #include "Pipeline.hpp"
 #include "SwapChain.hpp"
+#include "Model.hpp"
 
 namespace MAGE {
 
