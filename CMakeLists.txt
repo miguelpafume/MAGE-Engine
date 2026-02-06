@@ -37,7 +37,7 @@ message(STATUS "Vulkan include dir: $ENV{VULKAN_SDK}")
 
 file(GLOB_RECURSE SOURCES ${SRC_DIR}/*.cpp)
 file(GLOB_RECURSE HEADERS ${SRC_DIR}/*.hpp ${SRC_DIR}/*.h)
-file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.*)
+file(GLOB_RECURSE SHADERS ${CMAKE_SOURCE_DIR}/shaders/*.slang)
 file(GLOB_RECURSE SCRIPTS ${CMAKE_SOURCE_DIR}/scripts/*.*)
 
 source_group("Source Files" FILES ${SOURCES})
@@ -50,7 +50,22 @@ set_target_properties(update_mappings PROPERTIES FOLDER "Dependencies")
 set_target_properties(glm PROPERTIES FOLDER "Dependencies")
 
 # Recompile shaders
-# find_program(SLANG_EXECUTABLE slangc HINTS ${Vulkan_BIN_DIR})
+find_program(SLANG_EXECUTABLE slangc HINTS ${Vulkan_BIN_DIR})
+
+set(SPIRV_BINARY_FILES "")
+
+foreach(SHADER_SOURCE ${SHADERS})
+  set(SHADER_OUTPUT "${SHADERS}.spv")
+
+  add_custom_command(
+    OUTPUT ${SHADER_OUTPUT}
+    COMMAND ${SLANG_EXECUTABLE} ${SHADER_SOURCE} -target spiriv -o ${SHADER_OUTPUT}
+    DEPENDS ${SHADER_SOURCE}
+    COMMENT "Compiling shader: ${SHADER_SOURCE}"
+  )
+
+  list(APPEND SPIRV_BINARY_FILES ${SHADER_OUTPUT})
+endforeach()
 
 add_executable(
   ${PROJECT_NAME}

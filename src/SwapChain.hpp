@@ -8,7 +8,7 @@
 
 namespace MAGE {
 
-class SwapChain { 
+class SwapChain {
 public:
     static constexpr int MAX_FRAMES_IN_FLIGHT = 3;        
 
