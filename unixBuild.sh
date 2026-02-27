@@ -33,7 +33,7 @@ then
         # DOESN'T WORK
         # 'C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\devenv.exe' .\build\template.slnx /Build
     else
-        cmake -B ./build -G "MinGW Makefiles"
+        cmake -B ./build
         make -C ./build
     fi
 fi
@@ -41,5 +41,5 @@ fi
 if [ $run = true ]
 then
     echo
-    echo "WIP - UNIX RUN"
+    ./build/mage_engine
 fi
