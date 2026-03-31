@@ -25,21 +25,26 @@ done
 if [ $build = true ]
 then
     mkdir -p build
-
+    
     if [ $windows = true ]
     then
-        cmake -B ./build -G "Visual Studio 18 2026"
-        echo "Solution file Written to: ./build/<name>.slnx"
-        # DOESN'T WORK
-        # 'C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\devenv.exe' .\build\template.slnx /Build
+        cmake -B ./build -G "MinGW Makefiles" --parallel
+        cmake --build ./build --parallel
     else
         cmake -B ./build
         make -C ./build
     fi
 fi
-    
+
 if [ $run = true ]
 then
-    echo
-    ./build/mage_engine
+    if [ $windows = true ]
+    then
+        ./build/mage_engine.exe
+    else
+        echo
+        ./build/mage_engine
+    fi
 fi
+
+# base-devel mingw-w64-x86_64-toolchain mingw-w64-x86_64-gcc mingw-w64-x86_64-gdb mingw-w64-x86_64-cmake
