@@ -4,9 +4,7 @@ In order for the Build to work you need to have the following dependencies insta
 - Git
 - CMake
 - Vulkan SDK
-- Visual Studio with C++ Desktop Development tools
+- GCC/G++
 
-# Cloning the repo
-```
-git clone --recurse-submodules https://github.com/miguelpafume/MAGE-Engine.git
-```
+# TODO
+[] Implement VMA (Vulkan Memory Allocation)

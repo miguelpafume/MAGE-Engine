@@ -44,12 +44,15 @@ void Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo, cons
 		.pSpecializationInfo = nullptr
 	};
 
+	auto bindingDescriptions = Model::Vertex::getBindingDescription();
+	auto attributeDescriptions = Model::Vertex::getAttributeDescriptions();
+
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-		.vertexBindingDescriptionCount = 0,
-		.pVertexBindingDescriptions = nullptr,
-		.vertexAttributeDescriptionCount = 0,
-		.pVertexAttributeDescriptions = nullptr
+		.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size()),
+		.pVertexBindingDescriptions = bindingDescriptions.data(),
+		.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size()),
+		.pVertexAttributeDescriptions = attributeDescriptions.data()
 	};
 
 	VkPipelineViewportStateCreateInfo viewportInfo{

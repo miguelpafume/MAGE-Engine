@@ -13,6 +13,8 @@ namespace MAGE {
 
 class Engine {
 public:
+	void triangleFractal(std::vector<Model::Vertex> &vertices, int depth, glm::vec2 left, glm::vec2 right, glm::vec2 top);
+
 	void run();
 
 	Engine();
@@ -25,6 +27,7 @@ private:
 	static constexpr uint32_t WIDTH = 800;
 	static constexpr uint32_t HEIGHT = 800;
 
+	void loadModel();
 	void createPipeline();
 	void createPipelineLayout();
 	void createCommandBuffers();
@@ -38,6 +41,7 @@ private:
 	VkPipelineLayout m_pipelineLayout;
 	std::vector<VkCommandBuffer> m_commandBuffers;
 
+	std::unique_ptr<Model> m_model;
 };
 
 } // namespace MAGE

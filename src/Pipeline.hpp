@@ -6,6 +6,7 @@
 #include <cassert>
 
 #include "Device.hpp"
+#include "Model.hpp"
 
 namespace MAGE {
 

@@ -9,6 +9,7 @@
 namespace MAGE {
 
 Engine::Engine() { 
+	loadModel();
 	createPipelineLayout();
 	createPipeline();
 	createCommandBuffers();
@@ -25,6 +26,42 @@ void Engine::run() {
 	}
 
 	vkDeviceWaitIdle(m_device.getDevice());
+}
+
+void Engine::triangleFractal(
+	std::vector<Model::Vertex> &vertices,
+	int depth,
+	glm::vec2 left,
+	glm::vec2 right,
+	glm::vec2 top) {
+
+	if (depth <= 0) {
+		vertices.push_back({top});
+		vertices.push_back({right});
+		vertices.push_back({left});
+	} else {
+		auto leftTop = 0.5f * (left + top);
+		auto rightTop = 0.5f * (right + top);
+		auto leftRight = 0.5f * (left + right);
+
+		triangleFractal(vertices, depth - 1, left, leftRight, leftTop);
+		triangleFractal(vertices, depth - 1, leftRight, right, rightTop);
+		triangleFractal(vertices, depth - 1, leftTop, rightTop, top);
+	}
+}
+
+void Engine::loadModel() {
+	// std::vector<Model::Vertex> vertices {
+	// 	{{0.0f, -0.5f}},
+	// 	{{0.5f, 0.5f}},
+	// 	{{-0.5f, 0.5f}}
+	// };
+
+	std::vector<Model::Vertex> vertices {};
+
+	triangleFractal(vertices, 5, {-0.7f, 0.7f}, {0.7f, 0.7f}, {0.0f, -0.7f});
+
+	m_model = std::make_unique<Model>(m_device, vertices);
 }
 
 void Engine::createPipelineLayout() {
@@ -50,8 +87,8 @@ void Engine::createPipeline() {
 	m_pipeline = std::make_unique<Pipeline>(
 		m_device,
 		pipelineConfig,
-		"simple_shader.vert.spv",
-		"simple_shader.frag.spv"
+		"simpleVert.vert.slang.spv",
+		"simpleFrag.frag.slang.spv"
 	);
 }
 
@@ -98,7 +135,8 @@ void Engine::createCommandBuffers() {
 		vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		m_pipeline->bind(m_commandBuffers[i]);
-		vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
+		m_model->bind(m_commandBuffers[i]);
+		m_model->draw(m_commandBuffers[i]);
 
 		vkCmdEndRenderPass(m_commandBuffers[i]);
 
