@@ -18,6 +18,9 @@ public:
 	Device(Window& window);
 	~Device();
 
+	Device(const Device&) = delete;
+	Device& operator=(const Device&) = delete;
+
 	VkCommandPool getCommandPool() { return m_commandPool; }
 	VkDevice getDevice() { return m_device; }
 	VkSurfaceKHR getSurface() { return m_surface; }

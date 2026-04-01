@@ -10,23 +10,28 @@ namespace MAGE {
 
 class Window {
 public:
-	Window(uint32_t width, uint32_t height, std::string windowName);
+	Window(int width, int height, std::string windowName);
 	~Window();
 
 	Window(const Window&) = delete;
 	Window &operator=(const Window&) = delete;
 
 	bool shouldClose() { return glfwWindowShouldClose(m_window); }
-
-	void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+	bool windowResized() { return framebufferResized; }
+	void resetWindowResizedFlag() { framebufferResized = false; }
 	VkExtent2D getExtent() { return {static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height)}; }
 
-	private:
+	void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
+	
+private:
 	void initWindow();
+	static void framebufferResizedCallback(GLFWwindow* window, int width, int height);
 
-	const uint32_t m_width;
-	const uint32_t m_height;
+	int m_width;
+	int m_height;
 	const std::string m_windowName;
+
+	bool framebufferResized = false;
 
 	GLFWwindow* m_window;
 };

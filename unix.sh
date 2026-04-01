@@ -28,7 +28,7 @@ then
     
     if [ $windows = true ]
     then
-        cmake -B ./build -G "MinGW Makefiles" --parallel
+        cmake -B ./build -G "MinGW Makefiles"
         cmake --build ./build --parallel
     else
         cmake -B ./build

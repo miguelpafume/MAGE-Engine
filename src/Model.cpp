@@ -11,7 +11,6 @@ Model::~Model() {
     vkFreeMemory(m_device.getDevice(), m_vertexBufferMemory, nullptr);
 }
 
-
 void Model::createVertexBuffers(const std::vector<Vertex> &vertices)
 {
     m_vertexCount = static_cast<size_t>(vertices.size());
@@ -47,21 +46,34 @@ void Model::draw(VkCommandBuffer commandBuffer) {
 std::vector<VkVertexInputBindingDescription> Model::Vertex::getBindingDescription() {
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
 
-    bindingDescriptions[0].binding = 0;
-    bindingDescriptions[0].stride = sizeof(Vertex);
-    bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    bindingDescriptions[0] = {
+        .binding = 0,   
+        .stride = sizeof(Vertex),
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX
+    };
 
     return bindingDescriptions;
 }
 
 std::vector<VkVertexInputAttributeDescription> Model::Vertex::getAttributeDescriptions() {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(1);
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
 
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[0].offset = 0;
+    // Position
+    attributeDescriptions[0] = {
+        .location = 0,
+        .binding = 0,
+        .format = VK_FORMAT_R32G32_SFLOAT,
+        .offset = offsetof(Vertex, position)
+    };
 
+    // Color
+    attributeDescriptions[1] = {
+        .location = 1,
+        .binding = 0,
+        .format = VK_FORMAT_R32G32B32_SFLOAT,
+        .offset = offsetof(Vertex, color)
+    };
+    
     return attributeDescriptions;
 }
 

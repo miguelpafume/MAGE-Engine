@@ -32,10 +32,12 @@ private:
 	void createPipelineLayout();
 	void createCommandBuffers();
 	void drawFrame();
+	void recreateSwapChain();
+	void recordCommandBuffer(int imageIndex);
 
 	Window m_window{WIDTH, HEIGHT, "M.A.G.E."};
 	Device m_device{m_window};
-	SwapChain m_swapChain{m_device, m_window.getExtent()};
+	std::unique_ptr<SwapChain> m_swapChain;
 	
 	std::unique_ptr<Pipeline> m_pipeline;
 	VkPipelineLayout m_pipelineLayout;
