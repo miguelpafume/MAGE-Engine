@@ -12,19 +12,19 @@ namespace MAGE {
 
 struct PipelineConfigInfo {
 	PipelineConfigInfo() = default;
+
 	PipelineConfigInfo(const PipelineConfigInfo&) = delete;
     PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
-	VkRect2D scissor {};
-	VkViewport viewport {};
-
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo {};
-	VkPipelineRasterizationStateCreateInfo rasterizationInfo {};
-	VkPipelineMultisampleStateCreateInfo multisampleInfo {};
-	VkPipelineColorBlendAttachmentState colorBlendAttachment {};
-	VkPipelineColorBlendStateCreateInfo colorBlendInfo {};
-	VkPipelineDepthStencilStateCreateInfo depthStencilInfo {};
-
+	VkPipelineViewportStateCreateInfo 		viewportInfo{};
+	VkPipelineInputAssemblyStateCreateInfo 	inputAssemblyInfo {};
+	VkPipelineRasterizationStateCreateInfo 	rasterizationInfo {};
+	VkPipelineMultisampleStateCreateInfo 	multisampleInfo {};
+	VkPipelineColorBlendAttachmentState 	colorBlendAttachment {};
+	VkPipelineColorBlendStateCreateInfo 	colorBlendInfo {};
+	VkPipelineDepthStencilStateCreateInfo 	depthStencilInfo {};
+	VkPipelineDynamicStateCreateInfo		dynamicStateInfo{};
+	std::vector<VkDynamicState> dynamicStateEnabled;
 	VkPipelineLayout pipelineLayout = nullptr;
 	VkRenderPass renderPass = nullptr;
 	uint32_t subpass = 0;
@@ -44,7 +44,7 @@ public:
 	Pipeline& operator=(const Pipeline&) = delete;
 	
 	void bind(VkCommandBuffer commandBuffer);
-	static void defaultPipelineConfigInfo(uint32_t width, uint32_t height, PipelineConfigInfo &configInfo);
+	static void defaultPipelineConfigInfo(PipelineConfigInfo &configInfo);
 
 private:
 	static std::vector<char> readFile(const std::string &fileName);

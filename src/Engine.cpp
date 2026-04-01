@@ -93,7 +93,7 @@ void Engine::createPipelineLayout() {
 
 void Engine::createPipeline() {
 	PipelineConfigInfo pipelineConfig;
-	Pipeline::defaultPipelineConfigInfo(m_swapChain->getWidth(), m_swapChain->getHeight(), pipelineConfig);
+	Pipeline::defaultPipelineConfigInfo(pipelineConfig);
 	pipelineConfig.pipelineLayout = m_pipelineLayout;
 	pipelineConfig.renderPass = m_swapChain->getRenderPass();
 
@@ -147,6 +147,20 @@ void Engine::recordCommandBuffer(int imageIndex) {
 	renderPassInfo.pClearValues = clearValues.data();
 
 	vkCmdBeginRenderPass(m_commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	VkViewport viewport{
+		.x = 0.0f,
+		.y = 0.0f,
+		.width = static_cast<float>(m_swapChain->getSwapChainExtent().width),
+		.height = static_cast<float>(m_swapChain->getSwapChainExtent().height),
+		.minDepth = 0.0f,
+		.maxDepth = 1.0f,
+	};
+
+	VkRect2D scissor({0, 0}, m_swapChain->getSwapChainExtent());
+	
+	vkCmdSetViewport(m_commandBuffers[imageIndex], 0, 1, &viewport);
+	vkCmdSetScissor(m_commandBuffers[imageIndex], 0, 1, &scissor);
 
 	m_pipeline->bind(m_commandBuffers[imageIndex]);
 	m_model->bind(m_commandBuffers[imageIndex]);
