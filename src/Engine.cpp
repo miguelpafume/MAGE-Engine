@@ -1,6 +1,7 @@
 #include <memory>
 #include <stdexcept>
 #include <array>
+#include <queue>
 
 #include <vulkan/vulkan_core.h>
 
@@ -28,6 +29,11 @@ void Engine::run() {
 	vkDeviceWaitIdle(m_device.getDevice());
 }
 
+struct TriangleFracState {
+	int depth;
+	glm::vec2 left, right, top;
+};
+
 void Engine::triangleFractal(
 	std::vector<Model::Vertex> &vertices,
 	int depth,
@@ -35,18 +41,26 @@ void Engine::triangleFractal(
 	glm::vec2 right,
 	glm::vec2 top) {
 
-	if (depth <= 0) {
-		vertices.push_back({top});
-		vertices.push_back({right});
-		vertices.push_back({left});
-	} else {
-		auto leftTop = 0.5f * (left + top);
-		auto rightTop = 0.5f * (right + top);
-		auto leftRight = 0.5f * (left + right);
+	std::queue<TriangleFracState> queue;
+	queue.push({depth, left, right, top});
 
-		triangleFractal(vertices, depth - 1, left, leftRight, leftTop);
-		triangleFractal(vertices, depth - 1, leftRight, right, rightTop);
-		triangleFractal(vertices, depth - 1, leftTop, rightTop, top);
+	while (!queue.empty()) {
+		TriangleFracState currentTriangle = queue.front();
+		queue.pop();
+
+		if (currentTriangle.depth <= 0) {
+			vertices.push_back({currentTriangle.top});
+			vertices.push_back({currentTriangle.right});
+			vertices.push_back({currentTriangle.left});
+		} else {
+			glm::vec2 leftTop = 0.5f * (currentTriangle.left + currentTriangle.top);
+			glm::vec2 rightTop = 0.5f * (currentTriangle.right + currentTriangle.top);
+			glm::vec2 leftRight = 0.5f * (currentTriangle.left + currentTriangle.right);
+
+			queue.push({currentTriangle.depth - 1, currentTriangle.left, leftRight, leftTop});
+			queue.push({currentTriangle.depth - 1, leftRight, currentTriangle.right, rightTop});
+			queue.push({currentTriangle.depth - 1, leftTop, rightTop, currentTriangle.top});
+		}
 	}
 }
 
