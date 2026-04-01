@@ -49,23 +49,23 @@ set_target_properties(glfw PROPERTIES FOLDER "Dependencies")
 set_target_properties(update_mappings PROPERTIES FOLDER "Dependencies")
 set_target_properties(glm PROPERTIES FOLDER "Dependencies")
 
-# Recompile shaders
-find_program(SLANG_EXECUTABLE slangc HINTS ${Vulkan_BIN_DIR})
+# # Recompile shaders
+# find_program(SLANG_EXECUTABLE slangc HINTS ${Vulkan_BIN_DIR})
 
-set(SPIRV_BINARY_FILES "")
+# set(SPIRV_BINARY_FILES "")
 
-foreach(SHADER_SOURCE ${SHADERS})
-  set(SHADER_OUTPUT "${SHADERS}.spv")
+# foreach(SHADER_SOURCE ${SHADERS})
+#   set(SHADER_OUTPUT "${SHADERS}.spv")
 
-  add_custom_command(
-    OUTPUT ${SHADER_OUTPUT}
-    COMMAND ${SLANG_EXECUTABLE} ${SHADER_SOURCE} -target spiriv -o ${SHADER_OUTPUT}
-    DEPENDS ${SHADER_SOURCE}
-    COMMENT "Compiling shader: ${SHADER_SOURCE}"
-  )
+#   add_custom_command(
+#     OUTPUT ${SHADER_OUTPUT}
+#     COMMAND ${SLANG_EXECUTABLE} ${SHADER_SOURCE} -target spiriv -o ${SHADER_OUTPUT}
+#     DEPENDS ${SHADER_SOURCE}
+#     COMMENT "Compiling shader: ${SHADER_SOURCE}"
+#   )
 
-  list(APPEND SPIRV_BINARY_FILES ${SHADER_OUTPUT})
-endforeach()
+#   list(APPEND SPIRV_BINARY_FILES ${SHADER_OUTPUT})
+# endforeach()
 
 add_executable(
   ${PROJECT_NAME}
