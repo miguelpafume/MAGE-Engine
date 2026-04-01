@@ -92,6 +92,9 @@ void Engine::createPipelineLayout() {
 }
 
 void Engine::createPipeline() {
+	assert(m_swapChain != nullptr && "CANNOT CREATE PIPELINE BEFORE SWAP CHAIN!");
+	assert(m_pipelineLayout != nullptr && "CANNOT CREATE PIPELINE BEFORE PIPELINE LAYOUT!");
+
 	PipelineConfigInfo pipelineConfig;
 	Pipeline::defaultPipelineConfigInfo(pipelineConfig);
 	pipelineConfig.pipelineLayout = m_pipelineLayout;
@@ -183,8 +186,23 @@ void Engine::recreateSwapChain() {
 
 	vkDeviceWaitIdle(m_device.getDevice());
 
-	m_swapChain = std::make_unique<SwapChain>(m_device, extent);
+	if (m_swapChain == nullptr) {
+		m_swapChain = std::make_unique<SwapChain>(m_device, extent);
+	}
+	else {
+		m_swapChain = std::make_unique<SwapChain>(m_device, extent, std::move(m_swapChain));
+		if (m_swapChain->getImageCount() != m_commandBuffers.size()) {
+			freeCommandBuffers();
+			createCommandBuffers();
+		}
+	}
+
 	createPipeline();
+}
+
+void Engine::freeCommandBuffers() {
+	vkFreeCommandBuffers(m_device.getDevice(), m_device.getCommandPool(), static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+	m_commandBuffers.clear();
 }
 
 void Engine::drawFrame() {

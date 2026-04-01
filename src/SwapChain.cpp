@@ -10,6 +10,16 @@
 namespace MAGE {
 
 SwapChain::SwapChain(Device &m_device, VkExtent2D extent) : m_device{m_device}, m_windowExtent{extent} {
+    init();
+}
+
+SwapChain::SwapChain(Device &m_device, VkExtent2D extent, std::shared_ptr<SwapChain> previousSwapChain) : m_device{m_device}, m_windowExtent{extent}, m_oldSwapChain {previousSwapChain} {
+    init();
+
+    m_oldSwapChain = nullptr;
+}
+
+void SwapChain::init() {
     createSwapChain();
     createImageViews();
     createRenderPass();
@@ -143,7 +153,7 @@ void SwapChain::createSwapChain() {
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
 
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = m_oldSwapChain == nullptr ? VK_NULL_HANDLE  : m_oldSwapChain->m_swapChain;
 
     if (vkCreateSwapchainKHR(m_device.getDevice(), &createInfo, nullptr, &m_swapChain) != VK_SUCCESS) {
         throw std::runtime_error("FAILED TO CREATE SWAPCHAIN!");

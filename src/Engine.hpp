@@ -34,6 +34,7 @@ private:
 	void drawFrame();
 	void recreateSwapChain();
 	void recordCommandBuffer(int imageIndex);
+	void freeCommandBuffers();
 
 	Window m_window{WIDTH, HEIGHT, "M.A.G.E."};
 	Device m_device{m_window};

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 #include <vulkan/vulkan.h>
 
@@ -13,6 +14,7 @@ public:
     static constexpr int MAX_FRAMES_IN_FLIGHT = 2;        
 
     SwapChain(Device &deviceRef, VkExtent2D windowExtent);
+    SwapChain(Device &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previousSwapChain);
     ~SwapChain();
 
     SwapChain(const SwapChain &) = delete;
@@ -39,6 +41,7 @@ private:
     void createRenderPass();
     void createFramebuffers();
     void createSyncObjects();
+    void init();
 
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
@@ -58,6 +61,7 @@ private:
     Device &m_device;
     VkExtent2D m_windowExtent;
     VkSwapchainKHR m_swapChain;
+    std::shared_ptr<SwapChain> m_oldSwapChain;
 
     std::vector<VkSemaphore> m_imageAvailableSemaphores;
     std::vector<VkSemaphore> m_renderFinishedSemaphores;
