@@ -9,6 +9,12 @@
 
 namespace MAGE {
 
+// ###TEMP
+struct SimplePushConstantData {
+	glm::vec2 offset;
+	alignas(16) glm::vec3 color;
+};
+
 Engine::Engine() { 
 	loadModel();
 	createPipelineLayout();
@@ -78,12 +84,18 @@ void Engine::loadModel() {
 }
 
 void Engine::createPipelineLayout() {
+	VkPushConstantRange pushConstantRange{
+		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+		.offset = 0,
+		.size = sizeof(SimplePushConstantData),
+	};
+	
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
 		.setLayoutCount = 0,
 		.pSetLayouts = nullptr,
-		.pushConstantRangeCount = 0,
-		.pPushConstantRanges = nullptr
+		.pushConstantRangeCount = 1,
+		.pPushConstantRanges = &pushConstantRange
 	};
 
 	if (vkCreatePipelineLayout(m_device.getDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
@@ -124,6 +136,9 @@ void Engine::createCommandBuffers() {
 }
 
 void Engine::recordCommandBuffer(int imageIndex) {
+	static int frame = 0;
+	frame = (frame + 1) % 255;
+
 	VkCommandBufferBeginInfo beginInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 	};
@@ -167,7 +182,17 @@ void Engine::recordCommandBuffer(int imageIndex) {
 
 	m_pipeline->bind(m_commandBuffers[imageIndex]);
 	m_model->bind(m_commandBuffers[imageIndex]);
-	m_model->draw(m_commandBuffers[imageIndex]);
+
+	for (int i = 0; i < 4; i++) {
+		SimplePushConstantData push{
+			.offset = {-0.5f + frame * 0.005f, -0.4f + i * 0.25f},
+			.color = {0.0f, 0.0f, 0.2f + 0.2f * i}
+		};
+
+		vkCmdPushConstants(m_commandBuffers[imageIndex], m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
+
+		m_model->draw(m_commandBuffers[imageIndex]);
+	}
 
 	vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
 
