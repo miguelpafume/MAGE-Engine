@@ -11,7 +11,7 @@ namespace MAGE {
 
 class SwapChain {
 public:
-    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;        
+    static constexpr int MAX_FRAMES_IN_FLIGHT = 3;        
 
     SwapChain(Device &deviceRef, VkExtent2D windowExtent);
     SwapChain(Device &deviceRef, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previousSwapChain);
@@ -68,6 +68,7 @@ private:
     std::vector<VkFence> m_inFlightFences;
     std::vector<VkFence> m_imagesInFlight;
     size_t m_currentFrame = 0;
+    size_t m_currentSemaphore = 0;
 };
 
 } // namespace MAGE
