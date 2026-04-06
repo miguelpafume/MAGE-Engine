@@ -68,7 +68,6 @@ private:
     std::vector<VkFence> m_inFlightFences;
     std::vector<VkFence> m_imagesInFlight;
     size_t m_currentFrame = 0;
-    size_t m_currentSemaphore = 0;
 };
 
 } // namespace MAGE

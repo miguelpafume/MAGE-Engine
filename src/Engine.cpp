@@ -11,12 +11,13 @@ namespace MAGE {
 
 // ###TEMP
 struct SimplePushConstantData {
+	glm::mat2x2 transform{1.f};
 	glm::vec2 offset;
 	alignas(16) glm::vec3 color;
 };
 
 Engine::Engine() { 
-	loadModel();
+	loadGameObjects();
 	createPipelineLayout();
 	recreateSwapChain();
 	createCommandBuffers();
@@ -35,52 +36,61 @@ void Engine::run() {
 	vkDeviceWaitIdle(m_device.getDevice());
 }
 
-struct TriangleFracState {
-	int depth;
-	glm::vec2 left, right, top;
-};
+// struct TriangleFracState {
+// 	int depth;
+// 	glm::vec2 left, right, top;
+// };
 
-void Engine::triangleFractal(
-	std::vector<Model::Vertex> &vertices,
-	int depth,
-	glm::vec2 left,
-	glm::vec2 right,
-	glm::vec2 top) {
+// void Engine::triangleFractal(
+// 	std::vector<Model::Vertex> &vertices,
+// 	int depth,
+// 	glm::vec2 left,
+// 	glm::vec2 right,
+// 	glm::vec2 top) {
 
-	std::queue<TriangleFracState> queue;
-	queue.push({depth, left, right, top});
+// 	std::queue<TriangleFracState> queue;
+// 	queue.push({depth, left, right, top});
 
-	while (!queue.empty()) {
-		TriangleFracState currentTriangle = queue.front();
-		queue.pop();
+// 	while (!queue.empty()) {
+// 		TriangleFracState currentTriangle = queue.front();
+// 		queue.pop();
 
-		if (currentTriangle.depth <= 0) {
-			vertices.push_back({currentTriangle.top});
-			vertices.push_back({currentTriangle.right});
-			vertices.push_back({currentTriangle.left});
-		} else {
-			glm::vec2 leftTop = 0.5f * (currentTriangle.left + currentTriangle.top);
-			glm::vec2 rightTop = 0.5f * (currentTriangle.right + currentTriangle.top);
-			glm::vec2 leftRight = 0.5f * (currentTriangle.left + currentTriangle.right);
+// 		if (currentTriangle.depth <= 0) {
+// 			vertices.push_back({currentTriangle.top});
+// 			vertices.push_back({currentTriangle.right});
+// 			vertices.push_back({currentTriangle.left});
+// 		} else {
+// 			glm::vec2 leftTop = 0.5f * (currentTriangle.left + currentTriangle.top);
+// 			glm::vec2 rightTop = 0.5f * (currentTriangle.right + currentTriangle.top);
+// 			glm::vec2 leftRight = 0.5f * (currentTriangle.left + currentTriangle.right);
 
-			queue.push({currentTriangle.depth - 1, currentTriangle.left, leftRight, leftTop});
-			queue.push({currentTriangle.depth - 1, leftRight, currentTriangle.right, rightTop});
-			queue.push({currentTriangle.depth - 1, leftTop, rightTop, currentTriangle.top});
-		}
-	}
-}
+// 			queue.push({currentTriangle.depth - 1, currentTriangle.left, leftRight, leftTop});
+// 			queue.push({currentTriangle.depth - 1, leftRight, currentTriangle.right, rightTop});
+// 			queue.push({currentTriangle.depth - 1, leftTop, rightTop, currentTriangle.top});
+// 		}
+// 	}
+// }
 
-void Engine::loadModel() {
+void Engine::loadGameObjects() {
 	std::vector<Model::Vertex> vertices {
-		{{ 0.0f, -0.7f}, {1.0f, 0.0f, 0.0f}},
-		{{ 0.7f,  0.7f}, {0.0f, 1.0f, 0.0f}},
-		{{-0.7f,  0.7f}, {0.0f, 0.0f, 1.0f}}
+		{{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+		{{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+		{{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
 	};
 
 	// std::vector<Model::Vertex> vertices {};
 	// triangleFractal(vertices, 5, {-0.7f, 0.7f}, {0.7f, 0.7f}, {0.0f, -0.7f});
 
-	m_model = std::make_unique<Model>(m_device, vertices);
+	std::shared_ptr<Model> m_model = std::make_shared<Model>(m_device, vertices);
+
+	GameObject triangle = GameObject::createGameObject();
+	triangle.m_model = m_model;
+	triangle.m_color = {0.1f, 0.8f, 0.1f};
+	triangle.m_transform2d.translation.x = 0.2f;
+	triangle.m_transform2d.scale = {2.0f, 0.5f};
+	triangle.m_transform2d.rotation = 0.25f * glm::two_pi<float>();
+
+	m_gameObjects.push_back(std::move(triangle));
 }
 
 void Engine::createPipelineLayout() {
@@ -136,9 +146,6 @@ void Engine::createCommandBuffers() {
 }
 
 void Engine::recordCommandBuffer(int imageIndex) {
-	static int frame = 0;
-	frame = (frame + 1) % 255;
-
 	VkCommandBufferBeginInfo beginInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 	};
@@ -180,24 +187,31 @@ void Engine::recordCommandBuffer(int imageIndex) {
 	vkCmdSetViewport(m_commandBuffers[imageIndex], 0, 1, &viewport);
 	vkCmdSetScissor(m_commandBuffers[imageIndex], 0, 1, &scissor);
 
-	m_pipeline->bind(m_commandBuffers[imageIndex]);
-	m_model->bind(m_commandBuffers[imageIndex]);
-
-	for (int i = 0; i < 4; i++) {
-		SimplePushConstantData push{
-			.offset = {-0.5f + frame * 0.005f, -0.4f + i * 0.25f},
-			.color = {0.0f, 0.0f, 0.2f + 0.2f * i}
-		};
-
-		vkCmdPushConstants(m_commandBuffers[imageIndex], m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
-
-		m_model->draw(m_commandBuffers[imageIndex]);
-	}
+	renderGameObject(m_commandBuffers[imageIndex]);
 
 	vkCmdEndRenderPass(m_commandBuffers[imageIndex]);
 
 	if(vkEndCommandBuffer(m_commandBuffers[imageIndex]) != VK_SUCCESS) {
 		throw std::runtime_error("FAILED TO RECORD COMMAND BUFFER!");
+	}
+}
+
+void Engine::renderGameObject(VkCommandBuffer commandBuffer) {
+	m_pipeline->bind(commandBuffer);
+
+	for (GameObject& obj: m_gameObjects) {
+		obj.m_transform2d.rotation = glm::mod(obj.m_transform2d.rotation + 0.5f * m_deltaTime, glm::two_pi<float>());
+
+		SimplePushConstantData push{
+			.transform = obj.m_transform2d.mat2x2(),
+			.offset = obj.m_transform2d.translation,
+			.color = obj.m_color
+		};
+
+		vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
+
+		obj.m_model->bind(commandBuffer);
+		obj.m_model->draw(commandBuffer);
 	}
 }
 
@@ -233,6 +247,10 @@ void Engine::freeCommandBuffers() {
 void Engine::drawFrame() {
 	uint32_t imageIndex;
 	VkResult result = m_swapChain->acquireNextImage(&imageIndex);
+
+	float currentFrame = glfwGetTime();
+	m_deltaTime = currentFrame - m_lastFrame;
+	m_lastFrame = currentFrame;
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();

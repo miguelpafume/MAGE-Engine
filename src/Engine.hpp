@@ -3,6 +3,7 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <memory>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "Pipeline.hpp"
 #include "SwapChain.hpp"
 #include "Model.hpp"
+#include "GameObject.hpp"
 
 namespace MAGE {
 
@@ -27,11 +29,14 @@ public:
 	Engine(const Engine&) = delete;
 	Engine& operator=(const Engine&) = delete;
 
+	float m_deltaTime = 0.0f;
+	float m_lastFrame = 0.0f;
+
 private:
 	static constexpr uint32_t WIDTH = 800;
 	static constexpr uint32_t HEIGHT = 800;
 
-	void loadModel();
+	void loadGameObjects();
 	void createPipeline();
 	void createPipelineLayout();
 	void createCommandBuffers();
@@ -39,6 +44,7 @@ private:
 	void recreateSwapChain();
 	void recordCommandBuffer(int imageIndex);
 	void freeCommandBuffers();
+	void renderGameObject(VkCommandBuffer commandBuffer);
 
 	Window m_window{WIDTH, HEIGHT, "M.A.G.E."};
 	Device m_device{m_window};
@@ -48,7 +54,7 @@ private:
 	VkPipelineLayout m_pipelineLayout;
 	std::vector<VkCommandBuffer> m_commandBuffers;
 
-	std::unique_ptr<Model> m_model;
+	std::vector<GameObject> m_gameObjects;
 };
 
 } // namespace MAGE

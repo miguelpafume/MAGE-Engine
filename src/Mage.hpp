@@ -13,9 +13,10 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-#include <vector>
+#include <vector>	
 #include <optional>
 #include <iostream>
+#include <cstring>
 
 // DEBUG
 VkResult createDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
