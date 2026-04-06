@@ -1,8 +1,8 @@
 import push;
 
-// struct FragInput {
-//     float3 fragColor : COLOR;
-// };
+struct FragInput {
+    float3 fragColor : COLOR;
+};
 
 struct FragOutput {
     float4 color : SV_Target;

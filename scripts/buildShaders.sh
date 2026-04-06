@@ -2,6 +2,7 @@
 
 cd ../shaders/ || exit
 
+# Compile all Vertex files
 for f in *.vert.slang; do
     [ -e "$f" ] || continue
     slangc "$f" -stage vertex -target spirv -o "${f}.spv"
@@ -14,3 +15,5 @@ for f in *.frag.slang; do
 done
 
 cd ../scripts/ || exit
+
+# shader-slang
