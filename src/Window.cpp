@@ -1,35 +1,39 @@
 #include "Window.hpp"
 
 namespace MAGE {
-Window::Window(uint32_t width, uint32_t height, const char* title) : m_width(width), m_height(height), m_title(title) {
-	if (!glfwInit()) {
-		throw std::runtime_error("FAILED TO INITIALIZE GLFW!");
-	}
 
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-
+Window::Window(int width, int height, std::string windowName) : m_width{ width }, m_height{ height }, m_windowName{ windowName } {
 	initWindow();
-
-	glfwSetWindowUserPointer(m_window, this);
-	glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
 }
 
 Window::~Window() {
 	glfwDestroyWindow(m_window);
+	glfwTerminate();
 }
 
-void Window::initWindow() {
-	m_window = glfwCreateWindow(m_width, m_height, m_title, nullptr, nullptr);
-
-	if (!m_window) {
-		glfwTerminate();
-		throw std::runtime_error("FAILED TO CREATE GLFW WINDOW!");
+void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface) {
+	if (glfwCreateWindowSurface(instance, m_window, nullptr, surface) != VK_SUCCESS) {
+		throw std::runtime_error("FAILED TO CREATE WINDOW SURFACE!");
 	}
 }
 
-void Window::framebufferResizeCallback(GLFWwindow* glfwWindow, int width, int height) {
-	Window* window = reinterpret_cast<Window*>(glfwGetWindowUserPointer(glfwWindow));
-	window->m_FramebufferResized = true;
+void Window::framebufferResizedCallback(GLFWwindow* window, int width, int height) {
+	Window* mageWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	mageWindow->framebufferResized = true;
+	mageWindow->m_width = width;
+	mageWindow->m_height = height;
+}
+
+void Window::initWindow()
+{
+    glfwInit();
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+	m_window = glfwCreateWindow(m_width, m_height, m_windowName.c_str(), nullptr, nullptr);
+	glfwSetWindowUserPointer(m_window, this);
+	glfwSetFramebufferSizeCallback(m_window, framebufferResizedCallback);
 }
 
 } // namespace MAGE

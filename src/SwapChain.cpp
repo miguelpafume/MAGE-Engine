@@ -1,27 +1,405 @@
+#include <array>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <limits>
+#include <stdexcept>
+
 #include "SwapChain.hpp"
 
 namespace MAGE {
-SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface) {
-	SwapChainSupportDetails details;
 
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.capabilities);
-
-	uint32_t formatCount;
-	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
-
-	if (formatCount != 0) {
-		details.formats.resize(formatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, details.formats.data());
-	}
-
-	uint32_t presentModeCount;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr);
-
-	if (presentModeCount != 0) {
-		details.presentModes.resize(presentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, details.presentModes.data());
-	}
-
-	return details;
+SwapChain::SwapChain(Device &m_device, VkExtent2D extent) : m_device{m_device}, m_windowExtent{extent} {
+    init();
 }
-} // namespace MAGE
+
+SwapChain::SwapChain(Device &m_device, VkExtent2D extent, std::shared_ptr<SwapChain> previousSwapChain) : m_device{m_device}, m_windowExtent{extent}, m_oldSwapChain {previousSwapChain} {
+    init();
+
+    m_oldSwapChain = nullptr;
+}
+
+void SwapChain::init() {
+    createSwapChain();
+    createImageViews();
+    createRenderPass();
+    createDepthResources();
+    createFramebuffers();
+    createSyncObjects();
+}
+
+SwapChain::~SwapChain() {
+    for (VkImageView imageView : m_swapChainImageViews) {
+        vkDestroyImageView(m_device.getDevice(), imageView, nullptr);
+    }
+    m_swapChainImageViews.clear();
+
+    if (m_swapChain != nullptr) {
+        vkDestroySwapchainKHR(m_device.getDevice(), m_swapChain, nullptr);
+        m_swapChain = nullptr;
+    }
+
+    for (int i = 0; i < m_depthImages.size(); i++) {
+        vkDestroyImageView(m_device.getDevice(), m_depthImageViews[i], nullptr);
+        vkDestroyImage(m_device.getDevice(), m_depthImages[i], nullptr);
+        vkFreeMemory(m_device.getDevice(), m_depthImageMemorys[i], nullptr);
+    }
+
+    for (VkFramebuffer framebuffer : m_swapChainFramebuffers) {
+        vkDestroyFramebuffer(m_device.getDevice(), framebuffer, nullptr);
+    }
+
+    vkDestroyRenderPass(m_device.getDevice(), m_renderPass, nullptr);
+    
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        vkDestroySemaphore(m_device.getDevice(), m_imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(m_device.getDevice(), m_inFlightFences[i], nullptr);
+    }
+
+    for (size_t i = 0; i < m_renderFinishedSemaphores.size(); i++) {
+        vkDestroySemaphore(m_device.getDevice(), m_renderFinishedSemaphores[i], nullptr);
+    }
+}
+
+VkResult SwapChain::acquireNextImage(uint32_t *imageIndex) {
+    vkWaitForFences(m_device.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+
+    VkResult result = vkAcquireNextImageKHR(m_device.getDevice(), m_swapChain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, imageIndex);
+    return result;
+}
+
+VkResult SwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex) {
+    if (m_imagesInFlight[*imageIndex] != VK_NULL_HANDLE) {
+        vkWaitForFences(m_device.getDevice(), 1, &m_imagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
+    }
+    m_imagesInFlight[*imageIndex] = m_inFlightFences[m_currentFrame];
+
+    VkSemaphore waitSemaphores = m_imageAvailableSemaphores[m_currentFrame];
+    VkSemaphore signalSemaphores = m_renderFinishedSemaphores[*imageIndex];
+    VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    
+    VkSubmitInfo submitInfo = {
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &waitSemaphores,
+        .pWaitDstStageMask = &waitStages,
+        .commandBufferCount = 1,
+        .pCommandBuffers = buffers,
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = &signalSemaphores
+
+    };
+
+    vkResetFences(m_device.getDevice(), 1, &m_inFlightFences[m_currentFrame]);
+    if (vkQueueSubmit(m_device.getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
+        throw std::runtime_error("FAILED TO SUBMIT DRAW COMMAND BUFFER!");
+    }
+
+    VkSwapchainKHR swapChains[] = {m_swapChain};
+    
+    VkPresentInfoKHR presentInfo = {
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = &signalSemaphores,
+        .swapchainCount = 1,
+        .pSwapchains = swapChains,
+        .pImageIndices = imageIndex
+    };
+
+    VkResult result = vkQueuePresentKHR(m_device.getPresentQueue(), &presentInfo);
+
+    m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+    return result;
+}
+
+void SwapChain::createSwapChain() {
+    SwapChainSupportDetails swapChainSupport = m_device.getSwapChainSupport();
+
+    VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+    VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+    VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+
+    uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+    if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
+        imageCount = swapChainSupport.capabilities.maxImageCount;
+    }
+
+    VkSwapchainCreateInfoKHR createInfo = {
+        .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        .surface = m_device.getSurface(),
+        .minImageCount = imageCount,
+        .imageFormat = surfaceFormat.format,
+        .imageColorSpace = surfaceFormat.colorSpace,
+        .imageExtent = extent,
+        .imageArrayLayers = 1,
+        .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+    };
+
+    QueueFamilyIndices indices = m_device.findPhysicalQueueFamilies();
+    uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
+
+    if (indices.graphicsFamily != indices.presentFamily) {
+        createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        createInfo.queueFamilyIndexCount = 2;
+        createInfo.pQueueFamilyIndices = queueFamilyIndices;
+    }
+    else {
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.queueFamilyIndexCount = 0;
+        createInfo.pQueueFamilyIndices = nullptr;
+    }
+
+    createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+    createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+    createInfo.presentMode = presentMode;
+    createInfo.clipped = VK_TRUE;
+
+    createInfo.oldSwapchain = m_oldSwapChain == nullptr ? VK_NULL_HANDLE  : m_oldSwapChain->m_swapChain;
+
+    if (vkCreateSwapchainKHR(m_device.getDevice(), &createInfo, nullptr, &m_swapChain) != VK_SUCCESS) {
+        throw std::runtime_error("FAILED TO CREATE SWAPCHAIN!");
+    }
+
+    vkGetSwapchainImagesKHR(m_device.getDevice(), m_swapChain, &imageCount, nullptr);
+    m_swapChainImages.resize(imageCount);
+    vkGetSwapchainImagesKHR(m_device.getDevice(), m_swapChain, &imageCount, m_swapChainImages.data());
+
+    m_swapChainImageFormat = surfaceFormat.format;
+    m_swapChainExtent = extent;
+}
+
+void SwapChain::createImageViews() {
+    m_swapChainImageViews.resize(m_swapChainImages.size());
+
+    for (size_t i = 0; i < m_swapChainImages.size(); i++) {
+        VkImageViewCreateInfo viewInfo{};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = m_swapChainImages[i];
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = m_swapChainImageFormat;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+
+        if (vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &m_swapChainImageViews[i]) != VK_SUCCESS) {
+            throw std::runtime_error("FAILED TO CREATE TEXTURE IMAGE VIEW!");
+        }
+    }
+}
+
+void SwapChain::createRenderPass() {
+    VkAttachmentDescription depthAttachment{};
+    depthAttachment.format = findDepthFormat();
+    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.attachment = 1;
+    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentDescription colorAttachment = {};
+    colorAttachment.format = getSwapChainImageFormat();
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    VkAttachmentReference colorAttachmentRef = {};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass = {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.srcAccessMask = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstSubpass = 0;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+
+    VkRenderPassCreateInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    renderPassInfo.pAttachments = attachments.data();
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;
+
+    if (vkCreateRenderPass(m_device.getDevice(), &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("FAILED TO CREATE RENDER PASS!");
+    }
+}
+
+void SwapChain::createFramebuffers() {
+    m_swapChainFramebuffers.resize(getImageCount());
+    for (size_t i = 0; i < getImageCount(); i++) {
+        std::array<VkImageView, 2> attachments = {m_swapChainImageViews[i], m_depthImageViews[i]};
+
+        VkExtent2D swapChainExtent = getSwapChainExtent();
+        VkFramebufferCreateInfo framebufferInfo = {};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = m_renderPass;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
+        framebufferInfo.width = swapChainExtent.width;
+        framebufferInfo.height = swapChainExtent.height;
+        framebufferInfo.layers = 1;
+
+        if (vkCreateFramebuffer(m_device.getDevice(), &framebufferInfo, nullptr, &m_swapChainFramebuffers[i]) != VK_SUCCESS) {
+            throw std::runtime_error("FAILED TO CREATE FRAMEBUFFER!");
+        }
+    }
+}
+
+void SwapChain::createDepthResources() {
+    VkFormat depthFormat = findDepthFormat();
+    VkExtent2D swapChainExtent = getSwapChainExtent();
+
+    m_depthImages.resize(getImageCount());
+    m_depthImageMemorys.resize(getImageCount());
+    m_depthImageViews.resize(getImageCount());
+
+    for (int i = 0; i < m_depthImages.size(); i++) {
+        VkImageCreateInfo imageInfo{
+            .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .flags = 0,
+            .imageType = VK_IMAGE_TYPE_2D,
+            .format = depthFormat,
+            .extent {
+                .width = swapChainExtent.width,
+                .height = swapChainExtent.height,
+                .depth = 1
+            },
+            .mipLevels = 1,
+            .arrayLayers = 1,
+            .samples = VK_SAMPLE_COUNT_1_BIT,
+            .tiling = VK_IMAGE_TILING_OPTIMAL,
+            .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+
+        m_device.createImageWithInfo(imageInfo, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_depthImages[i], m_depthImageMemorys[i]);
+
+        VkImageViewCreateInfo viewInfo{
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .image = m_depthImages[i],
+            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+            .format = depthFormat,
+            .subresourceRange {
+                .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+                .baseMipLevel = 0,
+                .levelCount = 1,
+                .baseArrayLayer = 0,
+                .layerCount = 1,
+            }
+        };
+
+        if (vkCreateImageView(m_device.getDevice(), &viewInfo, nullptr, &m_depthImageViews[i]) != VK_SUCCESS) {
+            throw std::runtime_error("FAILED TO CREATE TEXTURE IMAGE VIEW!");
+        }
+    }
+}
+
+void SwapChain::createSyncObjects() {
+    m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    m_renderFinishedSemaphores.resize(getImageCount());
+    m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    m_imagesInFlight.resize(getImageCount(), VK_NULL_HANDLE);
+
+    VkSemaphoreCreateInfo semaphoreInfo = {
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO
+    };
+
+    VkFenceCreateInfo fenceInfo = {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT
+    };
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) { // was getImageCount();
+        VkResult imageSemaphore = vkCreateSemaphore(m_device.getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]);
+        VkResult fence = vkCreateFence(m_device.getDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]);
+        
+        if (fence != VK_SUCCESS || imageSemaphore != VK_SUCCESS) {
+            throw std::runtime_error("FAILED TO CREATE SYNCHRONIZATION OBJECTS FOR A FRAME! (IN FLIGHT FENCE // IMAGE SEMAPHORE)");
+        }
+    }
+
+    for (size_t i = 0; i < getImageCount(); i++) {
+        VkResult renderSemaphore = vkCreateSemaphore(m_device.getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]);
+        
+        if (renderSemaphore != VK_SUCCESS) {
+            throw std::runtime_error("FAILED TO CREATE SYNCHRONIZATION OBJECTS FOR A FRAME! (RENDER SEMAPHORE)");
+        }
+    }
+}
+
+VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+    for (const auto &availableFormat : availableFormats) {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            return availableFormat;
+        }
+    }
+
+    return availableFormats[0];
+}
+
+VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+    for (const VkPresentModeKHR &availablePresentMode : availablePresentModes) {
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            std::cout << "Present mode: Mailbox" << std::endl;
+            return availablePresentMode;
+        }
+    }
+
+    // for (const auto &availablePresentMode : availablePresentModes) {
+    //     if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
+    //         std::cout << "Present mode: Immediate" << std::endl;
+    //         return availablePresentMode;
+    //     }
+    // }
+
+    std::cout << "Present mode: V-Sync" << std::endl;
+    return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+        return capabilities.currentExtent;
+    }
+    else {
+        VkExtent2D actualExtent = m_windowExtent;
+        actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
+        actualExtent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actualExtent.height));
+
+        return actualExtent;
+    }
+}
+
+VkFormat SwapChain::findDepthFormat() {
+    return m_device.findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+                                        VK_IMAGE_TILING_OPTIMAL,
+                                        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+}
+
+}  // namespace MAGE

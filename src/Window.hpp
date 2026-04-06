@@ -1,38 +1,39 @@
 #pragma once
 
+#include <string>
+#include <stdexcept>
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <stdexcept>
-
 namespace MAGE {
+
 class Window {
 public:
-	Window(uint32_t width, uint32_t height, const char* title);
+	Window(int width, int height, std::string windowName);
 	~Window();
 
-	void poolEvents() { glfwPollEvents(); }
+	Window(const Window&) = delete;
+	Window &operator=(const Window&) = delete;
+
 	bool shouldClose() { return glfwWindowShouldClose(m_window); }
+	bool windowResized() { return framebufferResized; }
+	void resetWindowResizedFlag() { framebufferResized = false; }
+	VkExtent2D getExtent() { return {static_cast<uint32_t>(m_width), static_cast<uint32_t>(m_height)}; }
 
-	bool wasResized() const { return m_FramebufferResized; }
-	void resetResizeFlag() { m_FramebufferResized = false; }
-	void getFramebufferSize(int* width, int* height) { glfwGetFramebufferSize(m_window, width, height); }
-
-	GLFWwindow* getGLFWWindow() const { return m_window; }
-	uint32_t getWidth() const { return m_width; }
-	uint32_t getHeight() const { return m_height; }
-
-private:
-	GLFWwindow* m_window;
-	uint32_t m_width;
-	uint32_t m_height;
-	const char* m_title;
+	void createWindowSurface(VkInstance instance, VkSurfaceKHR* surface);
 	
-	bool m_FramebufferResized = false;
-
 private:
-	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
-
 	void initWindow();
+	static void framebufferResizedCallback(GLFWwindow* window, int width, int height);
+
+	int m_width;
+	int m_height;
+	const std::string m_windowName;
+
+	bool framebufferResized = false;
+
+	GLFWwindow* m_window;
 };
+
 } // namespace MAGE
