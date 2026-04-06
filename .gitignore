@@ -1,5 +1,8 @@
 *.spv
 
+#TEMP
+chip8.*
+
 build/
 include/
 x64/
