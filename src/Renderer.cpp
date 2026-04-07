@@ -19,7 +19,7 @@ Renderer::~Renderer() {
 }
 
 void Renderer::createCommandBuffers() {
-	m_commandBuffers.resize(m_swapChain->getImageCount());
+	m_commandBuffers.resize(SwapChain::MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo allocInfo {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -52,11 +52,6 @@ void Renderer::recreateSwapChain() {
 
 		if (!oldSwapChain->compareSwapChainFormats(*m_swapChain.get())) {
 			throw std::runtime_error("SWAP CHAIN IMAGE/DEPTH FORMAT HAS CHANGED!");
-		}
-
-		if (m_swapChain->getImageCount() != m_commandBuffers.size()) {
-			freeCommandBuffers();
-			createCommandBuffers();
 		}
 	}
 }
