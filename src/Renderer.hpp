@@ -23,8 +23,9 @@ public:
     void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
     void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
-    VkRenderPass getSwapChainRenderPass() const { return m_swapChain->getRenderPass(); }
-    bool getIsFrameInProgress() const { return m_isFrameStarted; }
+    VkRenderPass    getSwapChainRenderPass()    const { return m_swapChain->getRenderPass(); }
+    bool            getIsFrameInProgress()      const { return m_isFrameStarted; }
+    
     VkCommandBuffer  getcurrentCommandBuffer() const {
         assert(m_isFrameStarted && "CANNOT GET COMMAND BUFFER IF FRAME NOT IN PROGRESS");
         return m_commandBuffers[m_currentFrameIndex];

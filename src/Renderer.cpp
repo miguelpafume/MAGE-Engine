@@ -47,7 +47,13 @@ void Renderer::recreateSwapChain() {
 		m_swapChain = std::make_unique<SwapChain>(m_device, extent);
 	}
 	else {
-		m_swapChain = std::make_unique<SwapChain>(m_device, extent, std::move(m_swapChain));
+		std::shared_ptr<SwapChain> oldSwapChain = std::move(m_swapChain);
+		m_swapChain = std::make_unique<SwapChain>(m_device, extent, oldSwapChain);
+
+		if (!oldSwapChain->compareSwapChainFormats(*m_swapChain.get())) {
+			throw std::runtime_error("SWAP CHAIN IMAGE/DEPTH FORMAT HAS CHANGED!");
+		}
+
 		if (m_swapChain->getImageCount() != m_commandBuffers.size()) {
 			freeCommandBuffers();
 			createCommandBuffers();
