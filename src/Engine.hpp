@@ -10,17 +10,17 @@
 
 #include "Window.hpp"
 #include "Device.hpp"
-#include "Pipeline.hpp"
 #include "SwapChain.hpp"
 #include "Model.hpp"
 #include "GameObject.hpp"
+#include "Renderer.hpp"
+#include "Util.hpp"
+#include "RenderSystem.hpp"
 
 namespace MAGE {
 
 class Engine {
 public:
-	void triangleFractal(std::vector<Model::Vertex> &vertices, int depth, glm::vec2 left, glm::vec2 right, glm::vec2 top);
-
 	void run();
 
 	Engine();
@@ -37,22 +37,10 @@ private:
 	static constexpr uint32_t HEIGHT = 800;
 
 	void loadGameObjects();
-	void createPipeline();
-	void createPipelineLayout();
-	void createCommandBuffers();
-	void drawFrame();
-	void recreateSwapChain();
-	void recordCommandBuffer(int imageIndex);
-	void freeCommandBuffers();
-	void renderGameObject(VkCommandBuffer commandBuffer);
 
 	Window m_window{WIDTH, HEIGHT, "M.A.G.E."};
 	Device m_device{m_window};
-	std::unique_ptr<SwapChain> m_swapChain;
-	
-	std::unique_ptr<Pipeline> m_pipeline;
-	VkPipelineLayout m_pipelineLayout;
-	std::vector<VkCommandBuffer> m_commandBuffers;
+	Renderer m_renderer{m_window, m_device};
 
 	std::vector<GameObject> m_gameObjects;
 };

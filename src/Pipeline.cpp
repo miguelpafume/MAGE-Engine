@@ -44,8 +44,8 @@ void Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo, cons
 		.pSpecializationInfo = nullptr
 	};
 
-	std::vector<VkVertexInputBindingDescription> bindingDescriptions = Model::Vertex::getBindingDescription();
-	std::vector<VkVertexInputAttributeDescription> attributeDescriptions = Model::Vertex::getAttributeDescriptions();
+	std::vector<VkVertexInputBindingDescription> bindingDescriptions = Vertex::getBindingDescription();
+	std::vector<VkVertexInputAttributeDescription> attributeDescriptions = Vertex::getAttributeDescriptions();
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,

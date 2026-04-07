@@ -7,6 +7,7 @@
 
 #include "Device.hpp"
 #include "Model.hpp"
+#include "Util.hpp"
 
 namespace MAGE {
 

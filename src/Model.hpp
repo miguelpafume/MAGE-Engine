@@ -9,19 +9,12 @@
 #include <cstring>
 
 #include "Device.hpp"
+#include "Util.hpp"
 
 namespace MAGE {
 
 class Model {
-public:
-    struct Vertex {
-        glm::vec2 position;
-        glm::vec3 color;
-
-        static std::vector<VkVertexInputBindingDescription> getBindingDescription();
-        static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
-    };
-    
+public:   
     Model(Device& device, const std::vector<Vertex>& vertices);
 	~Model();
 
