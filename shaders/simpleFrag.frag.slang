@@ -9,8 +9,8 @@ struct FragOutput {
 };
 
 [shader("fragment")]
-FragOutput main() {
+FragOutput main(FragInput input) {
     FragOutput output;
-    output.color = float4(push.color, 1.0);
+    output.color = float4(input.fragColor, 1.0);
     return output;
 }

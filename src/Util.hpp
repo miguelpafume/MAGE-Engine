@@ -10,17 +10,78 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace MAGE {
 
+struct Transform3dComponent {
+    glm::vec3 translation {}; // Position offset
+    glm::vec3 scale {1.0f, 1.0f, 1.0f};
+    glm::vec3 rotation {};
+
+    glm::mat4x4 mat4x4() { 
+		const float c1 = glm::cos(rotation.x);
+		const float c2 = glm::cos(rotation.y);
+		const float c3 = glm::cos(rotation.z);
+
+		const float s1 = glm::sin(rotation.x);
+		const float s2 = glm::sin(rotation.y);
+		const float s3 = glm::sin(rotation.z);
+
+		glm::mat4x4 transform = glm::mat4x4 {
+			{
+				scale.x * (c2 * c3),
+				scale.x * (c1 * s3 + c3 * s1 * s2),
+				scale.x * (s1 * s3 - c1 * c3 * s2),
+				0.0f
+			},
+			{
+				scale.y * (-c2 * s3),
+				scale.y * (c1 * c3 - s1 * s2 * s3),
+				scale.y * (c3 * s1 + c1 * s2 * s3),
+				0.0f
+			},
+			{
+				scale.z * (s2),
+				scale.z * (-c2 * s1),
+				scale.z * (c1 * c2),
+				0.0f
+			},
+			{
+				translation.x,
+				translation.y,
+				translation.z,
+				1.0f 
+			}
+		};
+		
+		return transform;
+    }
+};
+
+struct Transform2dComponent {
+    glm::vec2 translation {}; // Position offset
+    glm::vec2 scale {1.0f, 1.0f};
+    float rotation;
+
+    // GLM READS FROM COLUMNS NOT ROWS
+    glm::mat2x2 mat2x2() { 
+        const float s = glm::sin(rotation);
+        const float c = glm::cos(rotation);
+        glm::mat2x2 rotationMatrix{{c, s}, {-s, c}};
+
+        glm::mat2x2 scaleMatrix{{scale.x, 0.0f}, {0.0f, scale.y}};
+        return rotationMatrix * scaleMatrix;
+    }
+};
+
 struct SimplePushConstantData {
-	glm::mat2x2 transform{1.f};
-	glm::vec2 offset;
+	glm::mat4x4 transform{1.f};
 	alignas(16) glm::vec3 color;
 };
 
 struct Vertex {
-	glm::vec2 position;
+	glm::vec3 position;
 	glm::vec3 color;
 
 	static std::vector<VkVertexInputBindingDescription> getBindingDescription();
