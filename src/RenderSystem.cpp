@@ -62,7 +62,7 @@ void RenderSystem::renderGameObject(VkCommandBuffer commandBuffer, std::vector<G
 		obj.m_transform3d.rotation.y = glm::mod(obj.m_transform3d.rotation.y + 0.5f * deltaTime, glm::two_pi<float>());
 
 		SimplePushConstantData push{
-			.transform = obj.m_transform3d.mat4x4(),
+			.transform = obj.m_is2d ? obj.m_transform2d.mat4x4() : obj.m_transform3d.mat4x4(),
 			.color = obj.m_color
 		};
 

@@ -98,6 +98,25 @@ void Engine::run() {
 void Engine::loadGameObjects() {
 	std::shared_ptr<Model> model = createCubeModel(m_device, {0.0f, 0.0f, 0.0f});
 
+	std::vector<Vertex> planeVertices {
+		{{-.5f, -.5f, 0.5f},{.5f, .1f, .8f}},
+		{{.5f, .5f, 0.5f},	{.5f, .1f, .8f}},
+		{{-.5f, .5f, 0.5f}, {.5f, .1f, .8f}},
+		{{-.5f, -.5f, 0.5f},{.5f, .1f, .8f}},
+		{{.5f, .5f, 0.5f},	{.5f, .1f, .8f}},
+		{{.5f, -.5f, 0.5f}, {.5f, .1f, .8f}},
+	};
+
+	std::shared_ptr<Model> planeModel = std::make_shared<Model>(m_device, planeVertices);
+	
+	GameObject plane = GameObject::createGameObject();
+	plane.m_is2d = true;
+	plane.m_model = planeModel;
+	plane.m_transform2d.translation = {0.0f, 0.0f};
+	plane.m_transform2d.scale = {1.0f, 1.0f};
+	plane.m_transform2d.rotation = 0.78f; // ~45 degrees
+	m_gameObjects.push_back(std::move(plane));
+
 	GameObject cube = GameObject::createGameObject();
 	cube.m_model = model;
 	cube.m_transform3d.translation = {0.0f, 0.0f, 0.5f};

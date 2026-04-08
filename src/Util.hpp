@@ -64,14 +64,18 @@ struct Transform2dComponent {
     glm::vec2 scale {1.0f, 1.0f};
     float rotation;
 
-    // GLM READS FROM COLUMNS NOT ROWS
-    glm::mat2x2 mat2x2() { 
-        const float s = glm::sin(rotation);
-        const float c = glm::cos(rotation);
-        glm::mat2x2 rotationMatrix{{c, s}, {-s, c}};
+    glm::mat4x4 mat4x4() { 
+		const float c = glm::cos(rotation);
+		const float s = glm::sin(rotation);
 
-        glm::mat2x2 scaleMatrix{{scale.x, 0.0f}, {0.0f, scale.y}};
-        return rotationMatrix * scaleMatrix;
+		glm::mat4x4 transform = glm::mat4x4 {
+			{ scale.x * c, scale.x * s, 0.0f, 0.0f},
+			{-scale.y * s, scale.y * c, 0.0f, 0.0f},
+			{0.0f, 0.0f, 1.0f, 0.0f,},
+			{translation.x, translation.y, 0.0f, 1.0f}
+		};
+		
+		return transform;
     }
 };
 
