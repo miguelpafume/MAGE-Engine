@@ -57,8 +57,10 @@ void RenderSystem::createPipeline(VkRenderPass renderPass) {
 void RenderSystem::renderGameObject(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera) {
 	m_pipeline->bind(commandBuffer);
 
+	glm::mat4x4 projectionView = camera.getProjection() * camera.getView();
+
 	for (GameObject& obj: gameObjects) {
-		glm::mat4x4 pushTransform = camera.getProjection() * obj.m_transform.mat4x4();
+		glm::mat4x4 pushTransform = projectionView * obj.m_transform.mat4x4();
 
 		SimplePushConstantData push{
 			.transform = pushTransform,

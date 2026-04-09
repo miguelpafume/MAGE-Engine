@@ -15,11 +15,17 @@ public:
 void setOrtohraphicProjection(float left, float right, float top, float bottom, float near, float far);
 void setPerspectiveProjection(float fov, float aspect, float near, float far);
 
-const glm::mat4x4& getProjection() const { return m_projectionMatrix; }
+void setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up = glm::vec3 {0.0f, -1.0f, 0.0f});
+void setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up = glm::vec3 {0.0f, -1.0f, 0.0f});
+void setViewXYZ(glm::vec3 position, glm::vec3 rotation);
+
+const glm::mat4x4& getProjection()  const { return m_projectionMatrix; }
+const glm::mat4x4& getView()        const { return m_viewMatrix; }
 
 private:
 
     glm::mat4x4 m_projectionMatrix {1.0f};
+    glm::mat4x4 m_viewMatrix {1.0f};
 
 };
 
