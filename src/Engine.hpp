@@ -12,6 +12,7 @@
 #include <array>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 #include "Window.hpp"
 #include "Device.hpp"
@@ -22,6 +23,7 @@
 #include "Util.hpp"
 #include "RenderSystem.hpp"
 #include "Camera.hpp"
+#include "KeyboardController.hpp"
 
 namespace MAGE {
 
@@ -34,9 +36,6 @@ public:
 
 	Engine(const Engine&) = delete;
 	Engine& operator=(const Engine&) = delete;
-
-	float m_deltaTime = 0.0f;
-	float m_lastFrame = 0.0f;
 
 private:
 	static constexpr uint32_t WIDTH = 800;

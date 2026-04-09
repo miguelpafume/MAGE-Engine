@@ -68,27 +68,33 @@ Engine::~Engine() {
 
 void Engine::run() {
 	RenderSystem renderSystem {m_device, m_renderer.getSwapChainRenderPass()};
+
 	Camera camera {};
 	float aspect = m_renderer.getAspectRatio();
 	camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1, 10.0f);
-	// camera.setViewDirection(glm::vec3 {0.0f, 0.0f, 0.0f}, glm::vec3 {0.5f, 0.0f, 1.0f}, glm::vec3 {0.0f, -1.0f, 0.0f});
-	camera.setViewTarget(glm::vec3{-1.0f, -2.0f, 2.0f}, glm::vec3{0.0f, 0.0f, 2.5f});
+
+	GameObject viewObject = GameObject::createGameObject();
+	KeyboardController cameraController {};
+	
+	auto currentTime = std::chrono::high_resolution_clock::now();
 
 	while (!m_window.shouldClose()) {
 		glfwPollEvents();
 
+		auto newTime = std::chrono::high_resolution_clock::now();
+		float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+		currentTime = newTime;
+
+		cameraController.moveInPlaneXZ(m_window.getGLFWWindow(), frameTime, viewObject);
+		camera.setViewXYZ(viewObject.m_transform.translation, viewObject.m_transform.rotation);
+
 		if (aspect != m_renderer.getAspectRatio()) {
 			aspect = m_renderer.getAspectRatio();
 			camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1, 10.0f);
-			// camera.setOrtohraphicProjection(-aspect, aspect, -1, 1, -1, 1);
 		}
 
-		float currentFrame = glfwGetTime();
-		m_deltaTime = currentFrame - m_lastFrame;
-		m_lastFrame = currentFrame;
-
-		m_gameObjects[1].m_transform.rotation.x = glm::mod(m_gameObjects[1].m_transform.rotation.x + 0.3f * m_deltaTime, glm::two_pi<float>());
-		m_gameObjects[1].m_transform.rotation.y = glm::mod(m_gameObjects[1].m_transform.rotation.y + 0.5f * m_deltaTime, glm::two_pi<float>());
+		m_gameObjects[1].m_transform.rotation.x = glm::mod(m_gameObjects[1].m_transform.rotation.x + 0.3f * frameTime, glm::two_pi<float>());
+		m_gameObjects[1].m_transform.rotation.y = glm::mod(m_gameObjects[1].m_transform.rotation.y + 0.5f * frameTime, glm::two_pi<float>());
 		// obj.m_transform.rotation.z = glm::mod(obj.m_transform.rotation.z + 0.5f * deltaTime, glm::two_pi<float>());
 
 		if (VkCommandBuffer commandBuffer = m_renderer.beginFrame()) {

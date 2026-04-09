@@ -62,9 +62,15 @@ void Camera::setViewXYZ(glm::vec3 position, glm::vec3 rotation) {
     const float s2 = glm::sin(rotation.y);
     const float s3 = glm::sin(rotation.z);
 
-    const glm::vec3 u{(c2 * c3), (c1 * s3 + c3 * s1 * s2), (s1 * s3 - c1 * c3 * s2)};
-    const glm::vec3 v{(-c2 * s3), (c1 * c3 - s1 * s2 * s3), (c3 * s1 + c1 * s2 * s3)};
-    const glm::vec3 w{(s2), (-c2 * s1), (c1 * c2)};
+    // X Y Z
+    // const glm::vec3 u{(c2 * c3), (c1 * s3 + c3 * s1 * s2), (s1 * s3 - c1 * c3 * s2)};
+    // const glm::vec3 v{(-c2 * s3), (c1 * c3 - s1 * s2 * s3), (c3 * s1 + c1 * s2 * s3)};
+    // const glm::vec3 w{(s2), (-c2 * s1), (c1 * c2)};
+
+    // Y X Z
+    const glm::vec3 u{(c2 * c3 + s1 * s2 * s3), (c1 * s3), (-s2 * c3 + c2 * s1 * s3)};                                                          
+    const glm::vec3 v{(-c2 * s3 + s1 * s2 * c3), (c1 * c3), (s2 * s3 + c2 * s1 * c3)};                                                          
+    const glm::vec3 w{(c1 * s2), (-s1), (c1 * c2)}; 
 
     m_viewMatrix = glm::mat4{1.f};
     m_viewMatrix[0][0] = u.x;
