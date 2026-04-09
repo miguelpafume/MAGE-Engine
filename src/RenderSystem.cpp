@@ -54,15 +54,14 @@ void RenderSystem::createPipeline(VkRenderPass renderPass) {
 	);
 }
 
-void RenderSystem::renderGameObject(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, float deltaTime) {
+void RenderSystem::renderGameObject(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera) {
 	m_pipeline->bind(commandBuffer);
 
 	for (GameObject& obj: gameObjects) {
-		obj.m_transform3d.rotation.x = glm::mod(obj.m_transform3d.rotation.x + 0.3f * deltaTime, glm::two_pi<float>());
-		obj.m_transform3d.rotation.y = glm::mod(obj.m_transform3d.rotation.y + 0.5f * deltaTime, glm::two_pi<float>());
+		glm::mat4x4 pushTransform = camera.getProjection() * obj.m_transform.mat4x4();
 
 		SimplePushConstantData push{
-			.transform = obj.m_is2d ? obj.m_transform2d.mat4x4() : obj.m_transform3d.mat4x4(),
+			.transform = pushTransform,
 			.color = obj.m_color
 		};
 

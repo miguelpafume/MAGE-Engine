@@ -1,10 +1,3 @@
-#include <memory>
-#include <stdexcept>
-#include <array>
-#include <queue>
-
-#include <vulkan/vulkan_core.h>
-
 #include "Engine.hpp"
 
 namespace MAGE {
@@ -75,17 +68,30 @@ Engine::~Engine() {
 
 void Engine::run() {
 	RenderSystem renderSystem {m_device, m_renderer.getSwapChainRenderPass()};
-
+	Camera camera {};
+	float aspect = m_renderer.getAspectRatio();
+	camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1, 10.0f);
+	
 	while (!m_window.shouldClose()) {
 		glfwPollEvents();
+
+		if (aspect != m_renderer.getAspectRatio()) {
+			aspect = m_renderer.getAspectRatio();
+			camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1, 10.0f);
+			// camera.setOrtohraphicProjection(-aspect, aspect, -1, 1, -1, 1);
+		}
 
 		float currentFrame = glfwGetTime();
 		m_deltaTime = currentFrame - m_lastFrame;
 		m_lastFrame = currentFrame;
 
+		m_gameObjects[1].m_transform.rotation.x = glm::mod(m_gameObjects[1].m_transform.rotation.x + 0.3f * m_deltaTime, glm::two_pi<float>());
+		m_gameObjects[1].m_transform.rotation.y = glm::mod(m_gameObjects[1].m_transform.rotation.y + 0.5f * m_deltaTime, glm::two_pi<float>());
+		// obj.m_transform.rotation.z = glm::mod(obj.m_transform.rotation.z + 0.5f * deltaTime, glm::two_pi<float>());
+
 		if (VkCommandBuffer commandBuffer = m_renderer.beginFrame()) {
 			m_renderer.beginSwapChainRenderPass(commandBuffer);
-			renderSystem.renderGameObject(commandBuffer, m_gameObjects, m_deltaTime);
+			renderSystem.renderGameObject(commandBuffer, m_gameObjects, camera);
 			m_renderer.endSwapChainRenderPass(commandBuffer);
 
 			m_renderer.endFrame();
@@ -110,17 +116,18 @@ void Engine::loadGameObjects() {
 	std::shared_ptr<Model> planeModel = std::make_shared<Model>(m_device, planeVertices);
 	
 	GameObject plane = GameObject::createGameObject();
-	plane.m_is2d = true;
 	plane.m_model = planeModel;
-	plane.m_transform2d.translation = {0.0f, 0.0f};
-	plane.m_transform2d.scale = {1.0f, 1.0f};
-	plane.m_transform2d.rotation = 0.78f; // ~45 degrees
+	plane.m_transform.translation = {0.0f, 0.0f, 2.0f};
+	plane.m_transform.scale = {1.0f, 1.0f, 1.0f};
+	plane.m_transform.rotation.x = 0.0f;
+	plane.m_transform.rotation.y = 0.0f;
+	plane.m_transform.rotation.z = glm::radians(45.0f);
 	m_gameObjects.push_back(std::move(plane));
 
 	GameObject cube = GameObject::createGameObject();
 	cube.m_model = model;
-	cube.m_transform3d.translation = {0.0f, 0.0f, 0.5f};
-	cube.m_transform3d.scale = {0.5f, 0.5f, 0.5f};
+	cube.m_transform.translation = {0.0f, 0.0f, 2.5f};
+	cube.m_transform.scale = {0.5f, 0.5f, 0.5f};
 
 	m_gameObjects.push_back(std::move(cube));
 }

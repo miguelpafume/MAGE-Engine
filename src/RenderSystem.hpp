@@ -8,12 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "Util.hpp"
+#include "Model.hpp"
 #include "Device.hpp"
+#include "Camera.hpp"
 #include "Pipeline.hpp"
 #include "SwapChain.hpp"
-#include "Model.hpp"
 #include "GameObject.hpp"
-#include "Util.hpp"
 
 namespace MAGE {
 
@@ -25,7 +26,7 @@ public:
 	RenderSystem(const RenderSystem&) = delete;
 	RenderSystem& operator=(const RenderSystem&) = delete;
     
-    void renderGameObject(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, float deltaTime);
+    void renderGameObject(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera);
 	
 private:
 	void createPipeline(VkRenderPass renderPass);

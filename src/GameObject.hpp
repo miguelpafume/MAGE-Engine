@@ -26,9 +26,7 @@ public:
     
     std::shared_ptr<Model> m_model {};
     glm::vec3 m_color {};
-    Transform2dComponent m_transform2d;
-    Transform3dComponent m_transform3d;
-    bool m_is2d = false;
+    TransformComponent m_transform;
 
 private:
     GameObject(id_t objId) : m_id(objId) {} 

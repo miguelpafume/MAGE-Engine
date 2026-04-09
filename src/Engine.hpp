@@ -5,6 +5,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include <vulkan/vulkan_core.h>
+
+#include <queue>
+#include <stdexcept>
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -16,6 +21,7 @@
 #include "Renderer.hpp"
 #include "Util.hpp"
 #include "RenderSystem.hpp"
+#include "Camera.hpp"
 
 namespace MAGE {
 

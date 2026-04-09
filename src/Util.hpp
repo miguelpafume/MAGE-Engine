@@ -14,12 +14,13 @@
 
 namespace MAGE {
 
-struct Transform3dComponent {
+struct TransformComponent {
     glm::vec3 translation {}; // Position offset
     glm::vec3 scale {1.0f, 1.0f, 1.0f};
     glm::vec3 rotation {};
 
     glm::mat4x4 mat4x4() { 
+		// X Y Z tait-bryan angle
 		const float c1 = glm::cos(rotation.x);
 		const float c2 = glm::cos(rotation.y);
 		const float c3 = glm::cos(rotation.z);
@@ -54,27 +55,43 @@ struct Transform3dComponent {
 				1.0f 
 			}
 		};
-		
-		return transform;
-    }
-};
 
-struct Transform2dComponent {
-    glm::vec2 translation {}; // Position offset
-    glm::vec2 scale {1.0f, 1.0f};
-    float rotation;
+		// Y X Z tait-bryan angle
+		// const float c1 = glm::cos(rotation.y);
+		// const float c2 = glm::cos(rotation.x);
+		// const float c3 = glm::cos(rotation.z);
 
-    glm::mat4x4 mat4x4() { 
-		const float c = glm::cos(rotation);
-		const float s = glm::sin(rotation);
+		// const float s1 = glm::sin(rotation.y);
+		// const float s2 = glm::sin(rotation.x);
+		// const float s3 = glm::sin(rotation.z);
 
-		glm::mat4x4 transform = glm::mat4x4 {
-			{ scale.x * c, scale.x * s, 0.0f, 0.0f},
-			{-scale.y * s, scale.y * c, 0.0f, 0.0f},
-			{0.0f, 0.0f, 1.0f, 0.0f,},
-			{translation.x, translation.y, 0.0f, 1.0f}
-		};
-		
+		// glm::mat4x4 transform = glm::mat4x4 {
+		// 	{
+		// 		scale.x * (c1 * c3 + s1 * s2 * s3),
+		// 		scale.x * (c2 * s3),
+		// 		scale.x * (c1 * s2 * s3 - c3 * s1),
+		// 		0.0f
+		// 	},
+		// 	{
+		// 		scale.y * (c3 * s1 * s2 - c1 * s3),
+		// 		scale.y * (c2 * c3),
+		// 		scale.y * (c1 * c3 * s2 + s1 * s3),
+		// 		0.0f
+		// 	},
+		// 	{
+		// 		scale.z * (c2 * s1),
+		// 		scale.z * (-s2),
+		// 		scale.z * (c1 * c2),
+		// 		0.0f
+		// 	},
+		// 	{
+		// 		translation.x,
+		// 		translation.y,
+		// 		translation.z,
+		// 		1.0f 
+		// 	}
+		// };
+
 		return transform;
     }
 };
