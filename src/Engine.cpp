@@ -3,60 +3,60 @@
 namespace MAGE {
 
 std::unique_ptr<Model> createCubeModel(Device& device, glm::vec3 offset) {
-	std::vector<Vertex> vertices{
+	Builder modelBuilder {};
+
+	modelBuilder.vertices = {
 		// left face (white)
 		{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
 		{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
 		{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-		{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
 		{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
-		{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
 
 		// right face (yellow)
 		{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
 		{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
 		{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-		{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
 		{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
 
 		// top face (orange, remember y axis points down)
 		{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
 		{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
 		{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-		{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
 		{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-		{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
 
 		// bottom face (red)
 		{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
 		{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
 		{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-		{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
 		{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
 
 		// nose face (blue)
 		{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
 		{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
 		{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-		{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
 		{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-		{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
 
 		// tail face (green)
 		{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
 		{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
 		{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-		{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
 		{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-		{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-
 	};
-	for (auto& v : vertices) {
+
+	for (auto& v : modelBuilder.vertices) {
 		v.position += offset;
 	}
-	return std::make_unique<Model>(device, vertices);
+
+	modelBuilder.indices = {
+		0, 1, 2, 0, 3, 1, // left face
+		4, 6, 5, 4, 7, 5, // right face
+		8, 9, 10, 8, 11, 9, // top face
+		12, 13, 14, 12, 15, 13, // bottom face
+		16, 17, 18, 16, 19, 17, // nose face
+		20, 21, 22, 20, 23, 21 // tail face
+	};
+
+	return std::make_unique<Model>(device, modelBuilder);
 }
 
 Engine::Engine() { 
@@ -82,10 +82,12 @@ void Engine::run() {
 		glfwPollEvents();
 
 		auto newTime = std::chrono::high_resolution_clock::now();
-		float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+		float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 		currentTime = newTime;
 
-		cameraController.moveInPlaneXZ(m_window.getGLFWWindow(), frameTime, viewObject);
+		deltaTime = std::min(deltaTime, 0.1f);
+
+		cameraController.moveInPlaneXZ(m_window.getGLFWWindow(), deltaTime, viewObject);
 		camera.setViewXYZ(viewObject.m_transform.translation, viewObject.m_transform.rotation);
 
 		if (aspect != m_renderer.getAspectRatio()) {
@@ -93,8 +95,8 @@ void Engine::run() {
 			camera.setPerspectiveProjection(glm::radians(50.0f), aspect, 0.1, 10.0f);
 		}
 
-		m_gameObjects[1].m_transform.rotation.x = glm::mod(m_gameObjects[1].m_transform.rotation.x + 0.3f * frameTime, glm::two_pi<float>());
-		m_gameObjects[1].m_transform.rotation.y = glm::mod(m_gameObjects[1].m_transform.rotation.y + 0.5f * frameTime, glm::two_pi<float>());
+		m_gameObjects[1].m_transform.rotation.x = glm::mod(m_gameObjects[1].m_transform.rotation.x + 0.3f * deltaTime, glm::two_pi<float>());
+		m_gameObjects[1].m_transform.rotation.y = glm::mod(m_gameObjects[1].m_transform.rotation.y + 0.5f * deltaTime, glm::two_pi<float>());
 		// obj.m_transform.rotation.z = glm::mod(obj.m_transform.rotation.z + 0.5f * deltaTime, glm::two_pi<float>());
 
 		if (VkCommandBuffer commandBuffer = m_renderer.beginFrame()) {
@@ -112,7 +114,9 @@ void Engine::run() {
 void Engine::loadGameObjects() {
 	std::shared_ptr<Model> model = createCubeModel(m_device, {0.0f, 0.0f, 0.0f});
 
-	std::vector<Vertex> planeVertices {
+	Builder planeBuilder {};
+
+	planeBuilder.vertices = {
 		{{-.5f, -.5f, 0.5f},{.5f, .1f, .8f}},
 		{{.5f, .5f, 0.5f},	{.5f, .1f, .8f}},
 		{{-.5f, .5f, 0.5f}, {.5f, .1f, .8f}},
@@ -121,7 +125,7 @@ void Engine::loadGameObjects() {
 		{{.5f, -.5f, 0.5f}, {.5f, .1f, .8f}},
 	};
 
-	std::shared_ptr<Model> planeModel = std::make_shared<Model>(m_device, planeVertices);
+	std::shared_ptr<Model> planeModel = std::make_shared<Model>(m_device, planeBuilder);
 	
 	GameObject plane = GameObject::createGameObject();
 	plane.m_model = planeModel;

@@ -109,6 +109,11 @@ struct Vertex {
 	static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
 };
 
+struct Builder {
+	std::vector<Vertex> vertices {};
+	std::vector<uint32_t> indices {};
+};
+
 struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
