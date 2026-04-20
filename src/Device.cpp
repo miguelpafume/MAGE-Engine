@@ -399,10 +399,11 @@ bool Device::checkValidationLayerSupport() {
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
+	// ###TODO CHANGE NESTED LOOP TO LOOK LIKE THE LOOP FROM checkDeviceExtensionSupport (USE std::set)
 	for (const char* layerName : m_validationLayers) {
 		bool layerFound = false;
 
-		for (const auto& layerProperties : availableLayers) {
+		for (const VkLayerProperties& layerProperties : availableLayers) {
 			if (strcmp(layerName, layerProperties.layerName) == 0) {
 				layerFound = true;
 				break;
