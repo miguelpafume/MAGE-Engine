@@ -55,4 +55,22 @@ std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions(
     return attributeDescriptions;
 }
 
+std::vector<char> readFile(const std::string& filename) {
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+	if (!file.is_open()) {
+		throw std::runtime_error("FAILED TO OPEN FILE: " + filename);
+	}
+
+	size_t fileSize = static_cast<size_t>(file.tellg());
+	std::vector<char> content(fileSize);
+
+	file.seekg(0);
+	file.read(content.data(), fileSize);
+
+	file.close();
+
+	return content;
+}
+
 } // namespace MAGE

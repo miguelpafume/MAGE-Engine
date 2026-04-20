@@ -37,4 +37,8 @@ void KeyboardController::moveInPlaneXZ(GLFWwindow* window, float deltaTime, Game
     }    
 }
 
+void KeyboardController::otherKeys(GLFWwindow *window, float deltaTime, GameObject &gameObject) {
+    if (glfwGetKey(window, keys.exit) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+}
+
 } // namespace MAGE

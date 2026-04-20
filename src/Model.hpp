@@ -7,9 +7,11 @@
 #include <vector>
 #include <cassert>
 #include <cstring>
+#include <memory>
 
-#include "Device.hpp"
 #include "Util.hpp"
+#include "Device.hpp"
+#include "Buffer.hpp"
 
 namespace MAGE {
 
@@ -30,13 +32,11 @@ private:
 
     Device &m_device;
 
-    VkBuffer m_vertexBuffer;
-    VkDeviceMemory m_vertexBufferMemory;
+    std::unique_ptr<Buffer> m_vertexBuffer;
     uint32_t m_vertexCount;
 
     bool m_hasIndexBuffer = false;
-    VkBuffer m_indexBuffer;
-    VkDeviceMemory m_indexBufferMemory;
+    std::unique_ptr<Buffer> m_indexBuffer;
     uint32_t m_indexCount;
 };
 

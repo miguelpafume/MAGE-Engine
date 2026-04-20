@@ -88,6 +88,7 @@ void Engine::run() {
 		deltaTime = std::min(deltaTime, 0.1f);
 
 		cameraController.moveInPlaneXZ(m_window.getGLFWWindow(), deltaTime, viewObject);
+		cameraController.otherKeys(m_window.getGLFWWindow(), deltaTime, viewObject);
 		camera.setViewXYZ(viewObject.m_transform.translation, viewObject.m_transform.rotation);
 
 		if (aspect != m_renderer.getAspectRatio()) {

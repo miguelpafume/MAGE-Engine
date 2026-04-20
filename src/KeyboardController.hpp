@@ -22,9 +22,12 @@ public:
         int lookRight = GLFW_KEY_RIGHT;
         int lookUp = GLFW_KEY_UP;
         int lookDown = GLFW_KEY_DOWN;
+
+        int exit = GLFW_KEY_ESCAPE;
     };
 
     void moveInPlaneXZ(GLFWwindow* window, float deltaTime, GameObject& gameObject);
+    void otherKeys(GLFWwindow* window, float deltaTime, GameObject& gameObject);
 
     KeyMapping keys {};
     float moveSpeed {3.0f};
