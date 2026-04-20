@@ -54,10 +54,10 @@ void RenderSystem::createPipeline(VkRenderPass renderPass) {
 	);
 }
 
-void RenderSystem::renderGameObject(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera) {
-	m_pipeline->bind(commandBuffer);
+void RenderSystem::renderGameObject(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects) {
+	m_pipeline->bind(frameInfo.commandBuffer);
 
-	glm::mat4x4 projectionView = camera.getProjection() * camera.getView();
+	glm::mat4x4 projectionView = frameInfo.camera.getProjection() * frameInfo.camera.getView();
 
 	for (GameObject& obj: gameObjects) {
 		glm::mat4x4 pushTransform = projectionView * obj.m_transform.mat4x4();
@@ -67,10 +67,10 @@ void RenderSystem::renderGameObject(VkCommandBuffer commandBuffer, std::vector<G
 			.color = obj.m_color
 		};
 
-		vkCmdPushConstants(commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
+		vkCmdPushConstants(frameInfo.commandBuffer, m_pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SimplePushConstantData), &push);
 
-		obj.m_model->bind(commandBuffer);
-		obj.m_model->draw(commandBuffer);
+		obj.m_model->bind(frameInfo.commandBuffer);
+		obj.m_model->draw(frameInfo.commandBuffer);
 	}
 }
 

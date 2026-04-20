@@ -26,7 +26,7 @@ public:
 	RenderSystem(const RenderSystem&) = delete;
 	RenderSystem& operator=(const RenderSystem&) = delete;
     
-    void renderGameObject(VkCommandBuffer commandBuffer, std::vector<GameObject>& gameObjects, const Camera& camera);
+    void renderGameObject(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects);
 	
 private:
 	void createPipeline(VkRenderPass renderPass);

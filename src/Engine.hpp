@@ -13,6 +13,7 @@
 #include <memory>
 #include <vector>
 #include <chrono>
+#include <numeric>
 
 #include "Window.hpp"
 #include "Device.hpp"
@@ -24,6 +25,7 @@
 #include "RenderSystem.hpp"
 #include "Camera.hpp"
 #include "KeyboardController.hpp"
+#include "Buffer.hpp"
 
 namespace MAGE {
 

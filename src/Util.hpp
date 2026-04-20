@@ -13,6 +13,8 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "Camera.hpp"
+
 namespace MAGE {
 
 struct TransformComponent {
@@ -113,6 +115,18 @@ struct Vertex {
 struct Builder {
 	std::vector<Vertex> vertices {};
 	std::vector<uint32_t> indices {};
+};
+
+struct GlobalUbo {
+	glm::mat4x4 projectionView{1.0f};
+	glm::vec3 lightDirection = glm::normalize(glm::vec3{1.0f, -3.0f, -1.0f});
+};
+
+struct FrameInfo {
+	int frameIndex;
+	float deltaTime;
+	VkCommandBuffer commandBuffer;
+	Camera &camera;
 };
 
 struct SwapChainSupportDetails {

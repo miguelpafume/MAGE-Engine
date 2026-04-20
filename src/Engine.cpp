@@ -63,10 +63,26 @@ Engine::Engine() {
 	loadGameObjects();
 }
 
-Engine::~Engine() { 
-}
+Engine::~Engine() {}
 
 void Engine::run() {
+	std::vector<std::unique_ptr<Buffer>> uboBuffers{SwapChain::MAX_FRAMES_IN_FLIGHT};
+
+	for (int i = 0; i < uboBuffers.size(); i++) {
+		uboBuffers[i] = std::make_unique<Buffer>(
+			m_device,
+			sizeof(GlobalUbo),
+			1,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			m_device.properties.limits.minUniformBufferOffsetAlignment
+		);
+
+		// ### TODO to use non-coherent memory need to fix Buffer::flush() to round offset/size to nonCoherentAtomSize boundaries.
+
+		uboBuffers[i]->map();
+	}
+
 	RenderSystem renderSystem {m_device, m_renderer.getSwapChainRenderPass()};
 
 	Camera camera {};
@@ -101,8 +117,22 @@ void Engine::run() {
 		// obj.m_transform.rotation.z = glm::mod(obj.m_transform.rotation.z + 0.5f * deltaTime, glm::two_pi<float>());
 
 		if (VkCommandBuffer commandBuffer = m_renderer.beginFrame()) {
+			int frameIndex = m_renderer.getFrameIndex();
+			FrameInfo frameInfo {
+				.frameIndex = frameIndex,
+				.deltaTime = deltaTime,
+				.commandBuffer = commandBuffer,
+				.camera = camera
+			};
+
+			// Update
+			GlobalUbo ubo {};
+			ubo.projectionView = camera.getProjection() * camera.getView();
+			uboBuffers[frameIndex]->writeToBuffer(&ubo);
+
+			// Render
 			m_renderer.beginSwapChainRenderPass(commandBuffer);
-			renderSystem.renderGameObject(commandBuffer, m_gameObjects, camera);
+			renderSystem.renderGameObject(frameInfo, m_gameObjects);
 			m_renderer.endSwapChainRenderPass(commandBuffer);
 
 			m_renderer.endFrame();
