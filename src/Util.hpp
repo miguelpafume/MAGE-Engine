@@ -32,7 +32,7 @@ struct TransformComponent {
 		// const float s2 = glm::sin(rotation.y);
 		// const float s3 = glm::sin(rotation.z);
 
-		// glm::mat4x4 transform = glm::mat4x4 {
+		// glm::mat4x4 modelMatrix = glm::mat4x4 {
 		// 	{
 		// 		scale.x * (c2 * c3),
 		// 		scale.x * (c1 * s3 + c3 * s1 * s2),
@@ -100,7 +100,7 @@ struct TransformComponent {
 };
 
 struct SimplePushConstantData {
-	glm::mat4x4 transform{1.f};
+	glm::mat4x4 modelMatrix{1.f};
 	alignas(16) glm::vec3 color;
 };
 
@@ -127,6 +127,7 @@ struct FrameInfo {
 	float deltaTime;
 	VkCommandBuffer commandBuffer;
 	Camera &camera;
+	VkDescriptorSet globalDescriptorSet;
 };
 
 struct SwapChainSupportDetails {

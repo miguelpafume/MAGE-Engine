@@ -20,7 +20,7 @@ namespace MAGE {
 
 class RenderSystem {
 public:
-	RenderSystem(Device& device, VkRenderPass renderPass);
+	RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
 	~RenderSystem();
 
 	RenderSystem(const RenderSystem&) = delete;
@@ -30,7 +30,7 @@ public:
 	
 private:
 	void createPipeline(VkRenderPass renderPass);
-	void createPipelineLayout();
+	void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
 
 	Device& m_device;
 

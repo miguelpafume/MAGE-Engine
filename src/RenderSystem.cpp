@@ -9,8 +9,8 @@
 
 namespace MAGE {
 
-RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass) : m_device{device} { 
-	createPipelineLayout();
+RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : m_device{device} { 
+	createPipelineLayout(globalSetLayout);
 	createPipeline(renderPass);
 }
 
@@ -18,17 +18,19 @@ RenderSystem::~RenderSystem() {
 	vkDestroyPipelineLayout(m_device.getDevice(), m_pipelineLayout, nullptr);
 }
 
-void RenderSystem::createPipelineLayout() {
+void RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
 	VkPushConstantRange pushConstantRange{
 		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 		.offset = 0,
 		.size = sizeof(SimplePushConstantData),
 	};
 	
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-		.setLayoutCount = 0,
-		.pSetLayouts = nullptr,
+		.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size()),
+		.pSetLayouts = descriptorSetLayouts.data(),
 		.pushConstantRangeCount = 1,
 		.pPushConstantRanges = &pushConstantRange
 	};
@@ -57,13 +59,13 @@ void RenderSystem::createPipeline(VkRenderPass renderPass) {
 void RenderSystem::renderGameObject(FrameInfo& frameInfo, std::vector<GameObject>& gameObjects) {
 	m_pipeline->bind(frameInfo.commandBuffer);
 
-	glm::mat4x4 projectionView = frameInfo.camera.getProjection() * frameInfo.camera.getView();
+	vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
 
 	for (GameObject& obj: gameObjects) {
-		glm::mat4x4 pushTransform = projectionView * obj.m_transform.mat4x4();
+		glm::mat4x4 pushTransform = obj.m_transform.mat4x4();
 
 		SimplePushConstantData push{
-			.transform = pushTransform,
+			.modelMatrix = pushTransform,
 			.color = obj.m_color
 		};
 

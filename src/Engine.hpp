@@ -26,6 +26,7 @@
 #include "Camera.hpp"
 #include "KeyboardController.hpp"
 #include "Buffer.hpp"
+#include "Descriptor.hpp"
 
 namespace MAGE {
 
@@ -49,6 +50,7 @@ private:
 	Device m_device{m_window};
 	Renderer m_renderer{m_window, m_device};
 
+	std::unique_ptr<DescriptorPool> m_globalPool {};
 	std::vector<GameObject> m_gameObjects;
 };
 

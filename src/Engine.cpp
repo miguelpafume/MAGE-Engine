@@ -60,6 +60,11 @@ std::unique_ptr<Model> createCubeModel(Device& device, glm::vec3 offset) {
 }
 
 Engine::Engine() { 
+	m_globalPool = DescriptorPool::Builder(m_device)
+		.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+		.build();
+	
 	loadGameObjects();
 }
 
@@ -83,7 +88,21 @@ void Engine::run() {
 		uboBuffers[i]->map();
 	}
 
-	RenderSystem renderSystem {m_device, m_renderer.getSwapChainRenderPass()};
+	std::unique_ptr<DescriptorSetLayout> globalSetLayout = DescriptorSetLayout::Builder(m_device)
+		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+		.build();
+
+	std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
+
+	for (int i = 0; i < globalDescriptorSets.size(); i++) {
+		VkDescriptorBufferInfo bufferInfo = uboBuffers[i]->descriptorInfo();
+
+		DescriptorWriter(*globalSetLayout, *m_globalPool)
+			.writeBuffer(0, &bufferInfo)
+			.build(globalDescriptorSets[i]);
+	}
+
+	RenderSystem renderSystem {m_device, m_renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
 
 	Camera camera {};
 	float aspect = m_renderer.getAspectRatio();
@@ -122,7 +141,8 @@ void Engine::run() {
 				.frameIndex = frameIndex,
 				.deltaTime = deltaTime,
 				.commandBuffer = commandBuffer,
-				.camera = camera
+				.camera = camera,
+				.globalDescriptorSet = globalDescriptorSets[frameIndex]
 			};
 
 			// Update

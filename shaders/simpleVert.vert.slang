@@ -1,4 +1,5 @@
 import push;
+import ubo;
 
 struct VertInput {
     float3 position : POSITION;
@@ -15,7 +16,7 @@ VertOutput main(VertInput input) {
     VertOutput output;
     // Transform * Position + Offset
     // output.pos = float4(mul(push.transform, input.position) + push.offset, 0.0, 1.0);
-    output.pos = mul(push3d.transform, float4(input.position, 1.0));
+    output.pos = mul(ubo.projectionViewMatrix, mul(push3d.modelMatrix, float4(input.position, 1.0)));
     output.fragColor = input.color;
     return output;
 }

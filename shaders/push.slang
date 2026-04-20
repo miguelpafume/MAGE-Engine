@@ -5,7 +5,7 @@ struct Push2D {
 };
 
 struct Push3D {
-    float4x4 transform;
+    float4x4 modelMatrix;
     float3 color;
 };
 
