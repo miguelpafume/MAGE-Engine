@@ -25,12 +25,19 @@ FetchContent_Declare(
   SOURCE_DIR ${INCLUDE_DIR}/glfw
 )
 
+FetchContent_Declare(
+  imgui
+  GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  GIT_TAG v1.92.7
+  SOURCE_DIR ${INCLUDE_DIR}/imgui
+)
+
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(glm glfw)
+FetchContent_MakeAvailable(glm glfw imgui)
 
 find_package(Vulkan REQUIRED)
 message(STATUS "Vulkan include dir: $ENV{VULKAN_SDK}")
@@ -48,6 +55,23 @@ source_group("Scripts" FILES ${SCRIPTS})
 set_target_properties(glfw PROPERTIES FOLDER "Dependencies")
 set_target_properties(update_mappings PROPERTIES FOLDER "Dependencies")
 set_target_properties(glm PROPERTIES FOLDER "Dependencies")
+
+# ImGUI
+# Since it doesn't have a CMakeLists.txt, we need to manually add the source files and create a target for it
+add_library(imgui STATIC
+  ${imgui_SOURCE_DIR}/imgui.cpp
+  ${imgui_SOURCE_DIR}/imgui_draw.cpp
+  ${imgui_SOURCE_DIR}/imgui_tables.cpp
+  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp
+)
+
+target_include_directories(imgui PUBLIC
+  ${CMAKE_SOURCE_DIR}/include/imgui                                                                                                              
+  ${CMAKE_SOURCE_DIR}/include/imgui/backends 
+)
 
 # # Recompile shaders
 # find_program(SLANG_EXECUTABLE slangc HINTS ${Vulkan_BIN_DIR})
@@ -75,19 +99,21 @@ add_executable(
   ${SCRIPTS}
 )
 
-target_include_directories(
-  ${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PRIVATE
   ${SRC_DIR}
   ${INCLUDE_DIR}
   ${glm_SOURCE_DIR}
   ${glfw_SOURCE_DIR}/include
   ${Vulkan_INCLUDE_DIRS}
+  ${imgui_SOURCE_DIR}
+  ${imgui_SOURCE_DIR}/backends
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
   glfw
   glm
   Vulkan::Vulkan
+  imgui
 )
 
 #Linux

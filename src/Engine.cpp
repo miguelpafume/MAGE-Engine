@@ -7,40 +7,40 @@ std::unique_ptr<Model> createCubeModel(Device& device, glm::vec3 offset) {
 
 	modelBuilder.vertices = {
 		// left face (white)
-		{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-		{{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-		{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-		{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+		{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}, {0.0f, 0.0f}},
+		{{-.5f, .5f, .5f}, {.9f, .9f, .9f}, {0.0f, 0.0f}},
+		{{-.5f, -.5f, .5f}, {.9f, .9f, .9f}, {0.0f, 0.0f}},
+		{{-.5f, .5f, -.5f}, {.9f, .9f, .9f}, {0.0f, 0.0f}},
 
 		// right face (yellow)
-		{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-		{{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-		{{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+		{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}, {0.0f, 0.0f}},
+		{{.5f, .5f, .5f}, {.8f, .8f, .1f}, {0.0f, 0.0f}},
+		{{.5f, -.5f, .5f}, {.8f, .8f, .1f}, {0.0f, 0.0f}},
+		{{.5f, .5f, -.5f}, {.8f, .8f, .1f}, {0.0f, 0.0f}},
 
 		// top face (orange, remember y axis points down)
-		{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
-		{{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-		{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
-		{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+		{{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}, {0.0f, 0.0f}},
+		{{.5f, -.5f, .5f}, {.9f, .6f, .1f}, {0.0f, 0.0f}},
+		{{-.5f, -.5f, .5f}, {.9f, .6f, .1f}, {0.0f, 0.0f}},
+		{{.5f, -.5f, -.5f}, {.9f, .6f, .1f}, {0.0f, 0.0f}},
 
 		// bottom face (red)
-		{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-		{{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-		{{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-		{{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+		{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}, {0.0f, 0.0f}},
+		{{.5f, .5f, .5f}, {.8f, .1f, .1f}, {0.0f, 0.0f}},
+		{{-.5f, .5f, .5f}, {.8f, .1f, .1f}, {0.0f, 0.0f}},
+		{{.5f, .5f, -.5f}, {.8f, .1f, .1f}, {0.0f, 0.0f}},
 
 		// nose face (blue)
-		{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-		{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-		{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-		{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+		{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {0.0f, 0.0f}},
+		{{.5f, .5f, 0.5f}, {.1f, .1f, .8f}, {0.0f, 0.0f}},
+		{{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}, {0.0f, 0.0f}},
+		{{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {0.0f, 0.0f}},
 
 		// tail face (green)
-		{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-		{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-		{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-		{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+		{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {0.0f, 0.0f}},
+		{{.5f, .5f, -0.5f}, {.1f, .8f, .1f}, {0.0f, 0.0f}},
+		{{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}, {0.0f, 0.0f}},
+		{{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {0.0f, 0.0f}},
 	};
 
 	for (auto& v : modelBuilder.vertices) {
@@ -61,8 +61,9 @@ std::unique_ptr<Model> createCubeModel(Device& device, glm::vec3 offset) {
 
 Engine::Engine() { 
 	m_globalPool = DescriptorPool::Builder(m_device)
-		.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT)
+		.setMaxSets(SwapChain::MAX_FRAMES_IN_FLIGHT + 10)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, SwapChain::MAX_FRAMES_IN_FLIGHT) // UBOs
+		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10) // Texture samplers (max 10)
 		.build();
 	
 	loadGameObjects();
@@ -88,21 +89,53 @@ void Engine::run() {
 		uboBuffers[i]->map();
 	}
 
+	// Global descriptor/set
 	std::unique_ptr<DescriptorSetLayout> globalSetLayout = DescriptorSetLayout::Builder(m_device)
 		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
 		.build();
-
+		
 	std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
-
+	
 	for (int i = 0; i < globalDescriptorSets.size(); i++) {
 		VkDescriptorBufferInfo bufferInfo = uboBuffers[i]->descriptorInfo();
-
+		
 		DescriptorWriter(*globalSetLayout, *m_globalPool)
 			.writeBuffer(0, &bufferInfo)
 			.build(globalDescriptorSets[i]);
 	}
 
-	RenderSystem renderSystem {m_device, m_renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+	// Add textures
+	m_textures.push_back(std::make_unique<Texture>(m_device, "textures/perryTheChad.jpg"));
+
+	// Texture descriptor/set
+	std::unique_ptr<DescriptorSetLayout> textureSetLayout = DescriptorSetLayout::Builder(m_device)
+		.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+		.build();
+		
+	std::vector<VkDescriptorSet> textureDescriptorSets(m_textures.size());
+
+	for (int i = 0; i < m_textures.size(); i++) {
+		VkDescriptorImageInfo imageInfo = m_textures[i]->descriptorInfo();
+
+		DescriptorWriter(*textureSetLayout, *m_globalPool)
+			.writeImage(0, &imageInfo)
+			.build(textureDescriptorSets[i]);
+	}
+
+	// Default white texture
+	m_defaultTexture = Texture::createDefaultWhite(m_device);
+	VkDescriptorImageInfo defaultImageInfo = m_defaultTexture->descriptorInfo();
+
+	VkDescriptorSet defaultTextureDescriptorSet;
+	DescriptorWriter(*textureSetLayout, *m_globalPool)
+		.writeImage(0, &defaultImageInfo)
+		.build(defaultTextureDescriptorSet);
+
+	// Apply texture to object
+	m_gameObjects[0].m_textureDescriptorSet = textureDescriptorSets[0];
+	m_gameObjects[1].m_textureDescriptorSet = defaultTextureDescriptorSet;
+
+	RenderSystem renderSystem {m_device, m_renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout(), textureSetLayout->getDescriptorSetLayout()};
 
 	Camera camera {};
 	float aspect = m_renderer.getAspectRatio();
@@ -168,13 +201,13 @@ void Engine::loadGameObjects() {
 	Builder planeBuilder {};
 
 	planeBuilder.vertices = {
-		{{-.5f, -.5f, 0.5f},{.5f, .1f, .8f}},
-		{{.5f, .5f, 0.5f},	{.5f, .1f, .8f}},
-		{{-.5f, .5f, 0.5f}, {.5f, .1f, .8f}},
-		{{-.5f, -.5f, 0.5f},{.5f, .1f, .8f}},
-		{{.5f, .5f, 0.5f},	{.5f, .1f, .8f}},
-		{{.5f, -.5f, 0.5f}, {.5f, .1f, .8f}},
+		{{-.5f, -.5f, 0.5f},{1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+		{{-.5f, .5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+		{{.5f, .5f, 0.5f},	{1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+		{{.5f, -.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
 	};
+
+	planeBuilder.indices = {0, 1, 2, 0, 2, 3};
 
 	std::shared_ptr<Model> planeModel = std::make_shared<Model>(m_device, planeBuilder);
 	

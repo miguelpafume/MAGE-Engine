@@ -9,8 +9,8 @@
 
 namespace MAGE {
 
-RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : m_device{device} { 
-	createPipelineLayout(globalSetLayout);
+RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout textureSetLayout) : m_device{device} { 
+	createPipelineLayout(globalSetLayout, textureSetLayout);
 	createPipeline(renderPass);
 }
 
@@ -18,14 +18,14 @@ RenderSystem::~RenderSystem() {
 	vkDestroyPipelineLayout(m_device.getDevice(), m_pipelineLayout, nullptr);
 }
 
-void RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
+void RenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout, VkDescriptorSetLayout textureSetLayout) {
 	VkPushConstantRange pushConstantRange{
 		.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 		.offset = 0,
 		.size = sizeof(SimplePushConstantData),
 	};
 	
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout, textureSetLayout};
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo {
 		.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -62,10 +62,12 @@ void RenderSystem::renderGameObject(FrameInfo& frameInfo, std::vector<GameObject
 	vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &frameInfo.globalDescriptorSet, 0, nullptr);
 
 	for (GameObject& obj: gameObjects) {
-		glm::mat4x4 pushTransform = obj.m_transform.mat4x4();
+		if (obj.m_textureDescriptorSet != VK_NULL_HANDLE) {
+			vkCmdBindDescriptorSets(frameInfo.commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 1, 1, &obj.m_textureDescriptorSet, 0, nullptr);
+		}
 
-		SimplePushConstantData push{
-			.modelMatrix = pushTransform,
+		SimplePushConstantData push {
+			.modelMatrix = obj.m_transform.mat4x4(),
 			.color = obj.m_color
 		};
 

@@ -107,6 +107,7 @@ struct SimplePushConstantData {
 struct Vertex {
 	glm::vec3 position;
 	glm::vec3 color;
+	glm::vec2 texCoord;
 
 	static std::vector<VkVertexInputBindingDescription> getBindingDescription();
 	static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();

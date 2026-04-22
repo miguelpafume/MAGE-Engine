@@ -27,9 +27,10 @@ public:
     std::shared_ptr<Model> m_model {};
     glm::vec3 m_color {};
     TransformComponent m_transform;
+    VkDescriptorSet m_textureDescriptorSet = VK_NULL_HANDLE;
 
 private:
-    GameObject(id_t objId) : m_id(objId) {} 
+    GameObject(id_t objId) : m_id(objId) {};
 
     id_t m_id;
 };

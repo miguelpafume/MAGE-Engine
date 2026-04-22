@@ -34,7 +34,7 @@ std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescription() {
 }
 
 std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions() {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(3);
 
     // Position
     attributeDescriptions[0] = {
@@ -52,6 +52,14 @@ std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions(
         .offset = offsetof(Vertex, color)
     };
     
+    // Texture Coordinates
+    attributeDescriptions[2] = {
+        .location = 2,
+        .binding = 0,
+        .format = VK_FORMAT_R32G32_SFLOAT,
+        .offset = offsetof(Vertex, texCoord)
+    };
+
     return attributeDescriptions;
 }
 

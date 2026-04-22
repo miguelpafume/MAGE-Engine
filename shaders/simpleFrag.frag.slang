@@ -1,7 +1,11 @@
 import push;
 
+[[vk::binding(0, 1)]]
+Sampler2D texSampler;
+
 struct FragInput {
     float3 fragColor : COLOR;
+    float2 fragTexCoord : TEXCOORD;
 };
 
 struct FragOutput {
@@ -11,6 +15,6 @@ struct FragOutput {
 [shader("fragment")]
 FragOutput main(FragInput input) {
     FragOutput output;
-    output.color = float4(input.fragColor, 1.0);
+    output.color = texSampler.Sample(input.fragTexCoord) * float4(input.fragColor, 1.0);
     return output;
 }

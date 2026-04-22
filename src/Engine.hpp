@@ -27,6 +27,7 @@
 #include "KeyboardController.hpp"
 #include "Buffer.hpp"
 #include "Descriptor.hpp"
+#include "Texture.hpp"
 
 namespace MAGE {
 
@@ -52,6 +53,8 @@ private:
 
 	std::unique_ptr<DescriptorPool> m_globalPool {};
 	std::vector<GameObject> m_gameObjects;
+	std::vector<std::unique_ptr<Texture>> m_textures;
+	std::unique_ptr<Texture> m_defaultTexture;
 };
 
 } // namespace MAGE

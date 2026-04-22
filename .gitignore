@@ -1,21 +1,22 @@
+# Shader
 *.spv
 
-#TEMP
-chip8.*
+# Third Parties
+include/*
+!include/stb_image.h
 
-build/
-include/
-x64/
-Debug/
-include/
-Release/
-bin/
-lib/
-
+# CMake Files
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
+
+build/
+x64/
+Debug/
+Release/
+bin/
+lib/
 
 *.user
 *.suo
