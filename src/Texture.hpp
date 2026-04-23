@@ -15,10 +15,10 @@ namespace MAGE {
 class Texture {
 public:
     // Load from file
-    Texture(Device& device, const std::string& imagePath);
+    Texture(Device& device, const std::string& imagePath, VkFilter filter = VK_FILTER_NEAREST);
 
     // Create from raw pixel data
-    Texture(Device& device, const uint8_t* pixels, uint32_t width, uint32_t height);
+    Texture(Device& device, const uint8_t* pixels, uint32_t width, uint32_t height, VkFilter filter = VK_FILTER_NEAREST);
     ~Texture();
 
     Texture(const Texture &) = delete;
@@ -28,7 +28,7 @@ public:
 
     static std::unique_ptr<Texture> createDefaultWhite(Device& device);
 
-    void update(const uint8_t* pixels, uint32_t width, uint32_t height);
+    void update(const uint8_t* pixels, uint32_t width = 0, uint32_t height = 0);
 
     uint32_t getWidth()     const { return m_width; }
     uint32_t getHeight()    const { return m_height; }
@@ -36,7 +36,7 @@ public:
 private:
     void createTextureImage(const uint8_t* pixels, uint32_t width, uint32_t height);
     void createImageView();
-    void createSampler();
+    void createSampler(VkFilter filter);
     
     Device& m_device;
 
