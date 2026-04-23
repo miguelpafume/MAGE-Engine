@@ -41,4 +41,17 @@ void KeyboardController::otherKeys(GLFWwindow *window, float deltaTime, GameObje
     if (glfwGetKey(window, keys.exit) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
 }
 
+void KeyboardController::updateChip8Input(GLFWwindow* window, Chip8& chip8) {
+    static const std::pair<int, uint8_t> keyMap[] = {
+        {chip8Keys.key0, 0x0}, {chip8Keys.key1, 0x1}, {chip8Keys.key2, 0x2}, {chip8Keys.key3, 0x3},
+        {chip8Keys.key4, 0x4}, {chip8Keys.key5, 0x5}, {chip8Keys.key6, 0x6}, {chip8Keys.key7, 0x7},
+        {chip8Keys.key8, 0x8}, {chip8Keys.key9, 0x9}, {chip8Keys.keyA, 0xA}, {chip8Keys.keyB, 0xB},
+        {chip8Keys.keyC, 0xC}, {chip8Keys.keyD, 0xD}, {chip8Keys.keyE, 0xE}, {chip8Keys.keyF, 0xF}
+    };
+
+    for (auto [glfwKey, chip8Key] : keyMap) {
+        chip8.m_keypad[chip8Key] = glfwGetKey(window, glfwKey) == GLFW_PRESS ? 1 : 0;
+    }
+}
+
 } // namespace MAGE

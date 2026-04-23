@@ -29,6 +29,9 @@
 #include "Descriptor.hpp"
 #include "Texture.hpp"
 
+// #define CHIP8_MODE
+#include "Chip8.hpp"
+
 namespace MAGE {
 
 class Engine {
