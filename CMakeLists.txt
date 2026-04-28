@@ -69,27 +69,11 @@ add_library(imgui STATIC
 )
 
 target_include_directories(imgui PUBLIC
-  ${CMAKE_SOURCE_DIR}/include/imgui                                                                                                              
-  ${CMAKE_SOURCE_DIR}/include/imgui/backends 
+  ${CMAKE_SOURCE_DIR}/include/imgui                                                                                                           
+  ${CMAKE_SOURCE_DIR}/include/imgui/backends
+  ${glfw_SOURCE_DIR}/include
+  ${Vulkan_INCLUDE_DIRS}
 )
-
-# # Recompile shaders
-# find_program(SLANG_EXECUTABLE slangc HINTS ${Vulkan_BIN_DIR})
-
-# set(SPIRV_BINARY_FILES "")
-
-# foreach(SHADER_SOURCE ${SHADERS})
-#   set(SHADER_OUTPUT "${SHADERS}.spv")
-
-#   add_custom_command(
-#     OUTPUT ${SHADER_OUTPUT}
-#     COMMAND ${SLANG_EXECUTABLE} ${SHADER_SOURCE} -target spiriv -o ${SHADER_OUTPUT}
-#     DEPENDS ${SHADER_SOURCE}
-#     COMMENT "Compiling shader: ${SHADER_SOURCE}"
-#   )
-
-#   list(APPEND SPIRV_BINARY_FILES ${SHADER_OUTPUT})
-# endforeach()
 
 add_executable(
   ${PROJECT_NAME}

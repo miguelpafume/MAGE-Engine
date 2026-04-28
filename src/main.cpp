@@ -5,9 +5,8 @@
 #include "Engine.hpp"
 
 int main() {
-	MAGE::Engine app;
-
 	try {
+		MAGE::Engine app;
 		app.run();
 	} catch (const std::exception& e) {
 		std::cerr << "ERROR: " << e.what() << std::endl;
