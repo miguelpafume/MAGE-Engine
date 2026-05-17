@@ -15,8 +15,8 @@ void Pipeline::createGraphicsPipeline(const PipelineConfigInfo &configInfo, cons
 	assert(configInfo.pipelineLayout != nullptr && "Cannot create graphics pipeline: no pipeline layout provided in config info");
 	assert(configInfo.renderPass != nullptr && "Cannot create graphics pipeline: no render pass provided in config info");
 	
-	std::vector<char> vertShaderCode = readFile(std::string(SOURCE_DIR) + "/shaders/" + vertexFile);
-	std::vector<char> fragShaderCode = readFile(std::string(SOURCE_DIR) + "/shaders/" + fragmentFile);
+	std::vector<char> vertShaderCode = readFile(std::string(MAGE_SHADER_DIR) + "/" + vertexFile);
+	std::vector<char> fragShaderCode = readFile(std::string(MAGE_SHADER_DIR) + "/" + fragmentFile);
 
 	createShaderModule(vertShaderCode, &m_vertexShaderModule);
 	createShaderModule(fragShaderCode, &m_fragmentShaderModule);
