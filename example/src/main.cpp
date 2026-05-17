@@ -1,11 +1,9 @@
+#include "App.hpp"
+
 #include <iostream>
 
-#include <vulkan/vulkan.h>
-
-#include "Engine.hpp"
-
 int main() {
-	MAGE::Engine app;
+	CubeApp app;
 
 	try {
 		app.run();

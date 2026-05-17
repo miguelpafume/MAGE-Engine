@@ -3,31 +3,17 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 
 #include <vulkan/vulkan_core.h>
 
-#include <queue>
-#include <stdexcept>
-#include <array>
+#include <string>
 #include <memory>
 #include <vector>
-#include <chrono>
-#include <numeric>
 
 #include "Window.hpp"
 #include "Device.hpp"
-#include "SwapChain.hpp"
-#include "Model.hpp"
-#include "GameObject.hpp"
 #include "Renderer.hpp"
-#include "Util.hpp"
-#include "RenderSystem.hpp"
-#include "Camera.hpp"
-#include "KeyboardController.hpp"
-#include "Buffer.hpp"
 #include "Descriptor.hpp"
-#include "Texture.hpp"
 
 namespace MAGE {
 
@@ -35,26 +21,29 @@ class Engine {
 public:
 	void run();
 
-	Engine();
+	Engine(std::string windowTitle = "M.A.G.E.");
 	~Engine();
-
+	
 	Engine(const Engine&) = delete;
 	Engine& operator=(const Engine&) = delete;
+	
+	uint32_t getWidth()		const { return WIDTH; }
+	uint32_t getHeight()	const { return HEIGHT; }
 
+	Window& getWindow() 								{ return m_window; }
+	Device& getDevice() 								{ return m_device; }
+	Renderer& getRenderer() 							{ return m_renderer; }
+	std::unique_ptr<DescriptorPool>& getGlobalPool()	{ return m_globalPool; }
+	
 private:
+	std::string m_windowTitle;
 	static constexpr uint32_t WIDTH = 800;
 	static constexpr uint32_t HEIGHT = 800;
-
-	void loadGameObjects();
-
-	Window m_window{WIDTH, HEIGHT, "M.A.G.E."};
+	
+	Window m_window{WIDTH, HEIGHT, m_windowTitle};
 	Device m_device{m_window};
 	Renderer m_renderer{m_window, m_device};
-
 	std::unique_ptr<DescriptorPool> m_globalPool {};
-	std::vector<GameObject> m_gameObjects;
-	std::vector<std::unique_ptr<Texture>> m_textures;
-	std::unique_ptr<Texture> m_defaultTexture;
 };
 
 } // namespace MAGE

@@ -5,7 +5,7 @@
 
 namespace MAGE {
 
-Texture::Texture(Device& device, const std::string& imagePath) : m_device(device) {
+Texture::Texture(Device& device, const std::string& imagePath, VkFilter filter) : m_device(device) {
     // Load image
     int texWidth, texHeight, texChannels;
 
@@ -20,13 +20,13 @@ Texture::Texture(Device& device, const std::string& imagePath) : m_device(device
     stbi_image_free(pixels);
 
     createImageView();
-    createSampler();
+    createSampler(filter);
 }
 
-Texture::Texture(Device& device, const uint8_t* pixels, uint32_t width, uint32_t height) : m_device(device) {
+Texture::Texture(Device& device, const uint8_t* pixels, uint32_t width, uint32_t height, VkFilter filter) : m_device(device) {
     createTextureImage(pixels, width, height);
     createImageView();
-    createSampler();
+    createSampler(filter);
 }
 
 Texture::~Texture() {
@@ -45,7 +45,7 @@ VkDescriptorImageInfo Texture::descriptorInfo() const {
     };
 }
 
-void Texture::update(const uint8_t* pixels, uint32_t width = 0, uint32_t height = 0) {
+void Texture::update(const uint8_t* pixels, uint32_t width, uint32_t height) {
     if (width == 0) width = m_width;
     if (height == 0) height = m_height;
 
@@ -134,11 +134,11 @@ void Texture::createImageView() {
     }
 }
 
-void Texture::createSampler() {
+void Texture::createSampler(VkFilter filter) {
     VkSamplerCreateInfo samplerInfo {
         .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .magFilter = VK_FILTER_LINEAR, // ###TODO Change both to NEAREST for a pixelated look
-        .minFilter = VK_FILTER_LINEAR,
+        .magFilter = filter, // ###TODO Change both to NEAREST for a pixelated look
+        .minFilter = filter,
         .mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
         .addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT,
         .addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT,

@@ -42,3 +42,5 @@ lib/
 *.so
 *.dylib
 *.out
+
+.clang-format

@@ -9,7 +9,6 @@ namespace MAGE {
 
 class KeyboardController {
 public:
-
     struct KeyMapping {
         int moveLeft = GLFW_KEY_A;
         int moveRight = GLFW_KEY_D;
