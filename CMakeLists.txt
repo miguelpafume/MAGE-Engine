@@ -70,6 +70,42 @@ file(GLOB MAGE_HEADERS CONFIGURE_DEPENDS ${MAGE_SRC_DIR}/*.hpp ${MAGE_SRC_DIR}/*
 add_library(mage STATIC ${MAGE_SOURCES} ${MAGE_HEADERS})
 add_library(MAGE::mage ALIAS mage)
 
+# Build shaders
+if (MAGE_BUILD_EXAMPLES)
+  add_subdirectory(example)
+endif()
+
+find_program(SLANGC slangc REQUIRED)
+
+file(GLOB MAGE_VERT_SHADERS     CONFIGURE_DEPENDS ${MAGE_DIR}/shaders/*.vert.slang)
+file(GLOB MAGE_FRAG_SHADERS     CONFIGURE_DEPENDS ${MAGE_DIR}/shaders/*.frag.slang)
+file(GLOB MAGE_SHADER_INCLUDES  CONFIGURE_DEPENDS ${MAGE_DIR}/shaders/*.slang)
+
+set(MAGE_SPV_OUTPUTS "")
+
+foreach(shader IN LISTS MAGE_VERT_SHADERS)
+  add_custom_command(
+    OUTPUT ${shader}.spv
+    COMMAND ${SLANGC} ${shader} -stage vertex -target spirv -o ${shader}.spv
+    DEPENDS ${shader} ${MAGE_SHADER_INCLUDES}
+    VERBATIM
+  )
+  list(APPEND MAGE_SPV_OUTPUTS ${shader}.spv)
+endforeach()
+
+foreach(shader IN LISTS MAGE_FRAG_SHADERS)
+  add_custom_command(
+    OUTPUT ${shader}.spv
+    COMMAND ${SLANGC} ${shader} -stage fragment -target spirv -o ${shader}.spv
+    DEPENDS ${shader} ${MAGE_SHADER_INCLUDES}
+    VERBATIM
+  )
+  list(APPEND MAGE_SPV_OUTPUTS ${shader}.spv)
+endforeach()
+
+add_custom_target(mage_shaders ALL DEPENDS ${MAGE_SPV_OUTPUTS})
+add_dependencies(mage mage_shaders)
+
 target_compile_features(mage PUBLIC cxx_std_20)
 
 target_include_directories(mage PUBLIC
@@ -87,8 +123,4 @@ target_link_libraries(mage
 if (UNIX AND NOT APPLE)                                                                                           
     find_package(X11 REQUIRED)
     target_link_libraries(mage PUBLIC ${X11_LIBRARIES} Xrandr Xxf86vm Xi pthread dl)                              
-endif()
-
-if (MAGE_BUILD_EXAMPLES)
-  add_subdirectory(example)
 endif()
